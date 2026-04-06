@@ -552,20 +552,26 @@ function renderSubtopicsPanel(){
 }
 
 function renderParagraph(text,lvl){
-  const blocks=[];let remaining=text;
+  const blocks=[];const inlines=[];
+  let remaining=text;
+  // Extract block math first
   remaining=remaining.replace(/\$\$([\s\S]+?)\$\$/g,(m,inner)=>{blocks.push(inner.trim());return`%%BLOCK${blocks.length-1}%%`;});
+  // Extract inline math
+  remaining=remaining.replace(/\$((?!\$)[^\n$]+?)\$/g,(m,inner)=>{inlines.push(inner.trim());return`%%INLINE${inlines.length-1}%%`;});
+
   const parts=remaining.split(/(%%BLOCK\d+%%)/);let html="";
   parts.forEach(part=>{
     const bm=part.match(/%%BLOCK(\d+)%%/);
-    if(bm){html+=`<div class="formula-card"><div class="formula-card-label">Formula</div><div class="formula-card-body formula-render" data-latex="${esc(blocks[parseInt(bm[1])])}"></div></div>`;}
-    else if(part.trim()){
-      const mathTokens=[];
-      let prose=part.replace(/\$((?!\$)[^\n$]+?)\$/g,(m)=>{mathTokens.push(m);return`%%MATH${mathTokens.length-1}%%`;});
+    if(bm){
+      html+=`<div class="formula-card"><div class="formula-card-label">Formula</div><div class="formula-card-body formula-render" data-latex="${esc(blocks[parseInt(bm[1])])}"></div></div>`;
+    } else if(part.trim()){
       const prevLvl=LEVELS[LEVELS.indexOf(lvl||currentLevel)-1];
+      let prose=part;
       prose=prose.replace(/\[PREREQ:\s*([^\]]+)\]/g,(_,c)=>{const tl=prevLvl||"grade5";const concept=c.trim();return`<span class="prereq-ref" onclick="jumpToPrereq('${esc(concept)}','${esc(tl)}')" title="Read at ${LEVEL_LABELS[tl]}">(&#x2191;&nbsp;see:&nbsp;<span class="prereq-label">${esc(concept)}</span>)</span>`;});
       prose=prose.replace(/\[DEEPER:\s*([^\]]+)\]/g,(_,c)=>{const concept=c.trim();return`<span class="deeper-link" onclick="jumpToDeeper('${esc(concept)}')" title="Explore: ${esc(concept)}">${esc(concept)}</span>`;});
-      prose=prose.replace(/%%MATH(\d+)%%/g,(_,i)=>mathTokens[parseInt(i)]);
       prose=prose.replace(/\[(\d+)\]/g,'<sup style="color:var(--accent);font-size:11px;font-weight:600;">[$1]</sup>');
+      // Restore inline math as data attributes — MathJax reads these after render
+      prose=prose.replace(/%%INLINE(\d+)%%/g,(_,i)=>`<span class="math-inline" data-tex="${esc(inlines[parseInt(i)])}"></span>`);
       html+=`<p>${prose}</p>`;
     }
   });
