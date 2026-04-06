@@ -208,6 +208,23 @@ app.get(`/analytics/${ANALYTICS_SECRET}`, (req, res) => {
 </body></html>`);
 });
 
+// ── Admin: clear cache for a specific topic ───────────
+app.post("/api/admin/clear-topic", (req, res) => {
+  const { topic, branch } = req.body;
+  if (!topic) return res.status(400).json({ error: "topic required" });
+  const topicLower = topic.toLowerCase();
+  const branchKey = branch ? branch.trim() : null;
+  let result;
+  if (branchKey) {
+    result = db.prepare("DELETE FROM explanations WHERE topic_lower=? AND branch=?").run(topicLower, branchKey);
+  } else {
+    result = db.prepare("DELETE FROM explanations WHERE topic_lower=?").run(topicLower);
+    db.prepare("DELETE FROM topics WHERE topic_lower=?").run(topicLower);
+  }
+  console.log(`🗑️  Cleared cache for: ${topic}${branchKey ? " / "+branchKey : ""} (${result.changes} rows)`);
+  res.json({ ok: true, deleted: result.changes });
+});
+
 // ── Daily cron ────────────────────────────────────────
 cron.schedule("0 0 * * *", () => { console.log("🕛 Daily cron fired"); }, { timezone:"UTC" });
 
