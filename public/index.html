@@ -474,7 +474,12 @@ function handleTextSelection(e){
   popup.style.left = popupX + "px";
   popup.style.top = Math.max(8, popupY) + "px"; // clamp to viewport top
 }
-document.addEventListener("mousedown", e=>{if(e.target.id!=="selection-popup"){document.getElementById("selection-popup").style.display="none";}});
+document.addEventListener("mousedown", e=>{
+  const popup = document.getElementById("selection-popup");
+  // Don't hide if clicking the popup itself — let onclick fire first
+  if(e.target===popup||popup.contains(e.target)) return;
+  popup.style.display="none";
+});
 function exploreSelection(){
   const popup = document.getElementById("selection-popup");
   popup.style.display="none";
@@ -772,8 +777,39 @@ function parseSections(text){
 
 // ── Visuals builders ──────────────────────────────────
 function buildImgStrip(imgs){return`<div class="image-strip">${imgs.map(img=>`<div class="img-card"><img src="${esc(img.src)}" alt="${esc(img.caption)}" loading="lazy" onerror="this.parentElement.style.display='none'"><div class="img-cap">${esc(img.caption)}</div></div>`).join("")}</div>`;}
-function buildFlowchart(nodes,title){if(!nodes||!nodes.length)return"";const W=520,PW=160,PH=44,GAP=52,PAD=20,cx=W/2;const svgH=nodes.length*(PH+GAP)+PAD*2;let svg=`<svg width="${W}" height="${svgH}" viewBox="0 0 ${W} ${svgH}" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#9a9890" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>`;nodes.forEach((n,i)=>{const x=cx-PW/2,y=PAD+i*(PH+GAP);const fill=i===0?"#E1F5EE":i===nodes.length-1?"#EEEDFE":"#f7f6f3";const stroke=i===0?"#1D9E75":i===nodes.length-1?"#534AB7":"rgba(0,0,0,0.15)";const tc=i===0?"#0a5a40":i===nodes.length-1?"#3C3489":"#1a1a18";svg+=`<rect x="${x}" y="${y}" width="${PW}" height="${PH}" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/>`;const words=(n.label||"").split(" ");let line="";const lines=[];words.forEach(w=>{if((line+" "+w).trim().length>20&&line){lines.push(line);line=w;}else line=(line+" "+w).trim();});if(line)lines.push(line);const lh=16,sy=y+PH/2-(lines.length-1)*lh/2;lines.forEach((ln,li)=>svg+=`<text x="${cx}" y="${sy+li*lh}" text-anchor="middle" dominant-baseline="central" font-size="12" fill="${tc}">${esc(ln)}</text>`);if(i<nodes.length-1)svg+=`<line x1="${cx}" y1="${y+PH}" x2="${cx}" y2="${y+PH+GAP-6}" stroke="#9a9890" stroke-width="1" marker-end="url(#arr)"/>`;});svg+="</svg>";return`<div class="fc-wrap"><div class="fc-hdr">${esc(title)}</div><div class="fc-body">${svg}</div></div>`;}
-function buildConceptMap(nodes,title){if(!nodes||!nodes.length)return"";const W=520,H=300,cx=W/2,cy=H/2,r=105;const hub=nodes[0],spokes=nodes.slice(1,7),n=spokes.length;let svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;svg+=`<ellipse cx="${cx}" cy="${cy}" rx="70" ry="30" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1"/>`;svg+=`<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#0a5a40">${esc((hub.label||"").slice(0,22))}</text>`;spokes.forEach((s,i)=>{const angle=(2*Math.PI*i/n)-Math.PI/2;const sx=cx+r*Math.cos(angle),sy=cy+r*Math.sin(angle);svg+=`<line x1="${cx}" y1="${cy}" x2="${sx}" y2="${sy}" stroke="#d0cec8" stroke-width="1" stroke-dasharray="3 2"/>`;svg+=`<ellipse cx="${sx}" cy="${sy}" rx="56" ry="22" fill="#f7f6f3" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`;svg+=`<text x="${sx}" y="${sy}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#1a1a18">${esc((s.label||"").slice(0,18))}</text>`;});svg+="</svg>";return`<div class="cm-wrap"><div class="cm-hdr">${esc(title)}</div><div class="cm-body">${svg}</div></div>`;}
+function escSvg(s){
+  // For SVG text content — only escape the characters SVG actually needs
+  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function buildFlowchart(nodes,title){if(!nodes||!nodes.length)return"";const W=520,PW=160,PH=44,GAP=52,PAD=20,cx=W/2;const svgH=nodes.length*(PH+GAP)+PAD*2;let svg=`<svg width="${W}" height="${svgH}" viewBox="0 0 ${W} ${svgH}" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#9a9890" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>`;nodes.forEach((n,i)=>{const x=cx-PW/2,y=PAD+i*(PH+GAP);const fill=i===0?"#E1F5EE":i===nodes.length-1?"#EEEDFE":"#f7f6f3";const stroke=i===0?"#1D9E75":i===nodes.length-1?"#534AB7":"rgba(0,0,0,0.15)";const tc=i===0?"#0a5a40":i===nodes.length-1?"#3C3489":"#1a1a18";svg+=`<rect x="${x}" y="${y}" width="${PW}" height="${PH}" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/>`;const words=(n.label||"").split(" ");let line="";const lines=[];words.forEach(w=>{if((line+" "+w).trim().length>20&&line){lines.push(line);line=w;}else line=(line+" "+w).trim();});if(line)lines.push(line);const lh=16,sy=y+PH/2-(lines.length-1)*lh/2;lines.forEach((ln,li)=>svg+=`<text x="${cx}" y="${sy+li*lh}" text-anchor="middle" dominant-baseline="central" font-size="12" fill="${tc}">${escSvg(ln)}</text>`);if(i<nodes.length-1)svg+=`<line x1="${cx}" y1="${y+PH}" x2="${cx}" y2="${y+PH+GAP-6}" stroke="#9a9890" stroke-width="1" marker-end="url(#arr)"/>`;});svg+="</svg>";return`<div class="fc-wrap"><div class="fc-hdr">${esc(title)}</div><div class="fc-body">${svg}</div></div>`;}
+
+function buildConceptMap(nodes,title){
+  if(!nodes||!nodes.length)return"";
+  const W=520,H=300,cx=W/2,cy=H/2,r=105;
+  const hub=nodes[0],spokes=nodes.slice(1,7),n=spokes.length;
+  let svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  svg+=`<ellipse cx="${cx}" cy="${cy}" rx="70" ry="30" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1"/>`;
+  svg+=`<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#0a5a40">${escSvg((hub.label||"").slice(0,22))}</text>`;
+  spokes.forEach((s,i)=>{
+    const angle=(2*Math.PI*i/n)-Math.PI/2;
+    const sx=cx+r*Math.cos(angle),sy=cy+r*Math.sin(angle);
+    svg+=`<line x1="${cx}" y1="${cy}" x2="${sx}" y2="${sy}" stroke="#d0cec8" stroke-width="1" stroke-dasharray="3 2"/>`;
+    svg+=`<ellipse cx="${sx}" cy="${sy}" rx="56" ry="22" fill="#f7f6f3" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`;
+    // Split long labels onto two lines
+    const label=(s.label||"").slice(0,28);
+    const words=label.split(" ");let l1="",l2="";
+    words.forEach(w=>{if((l1+" "+w).trim().length<=14)l1=(l1+" "+w).trim();else l2=(l2+" "+w).trim();});
+    if(l2){
+      svg+=`<text x="${sx}" y="${sy-7}" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#1a1a18">${escSvg(l1)}</text>`;
+      svg+=`<text x="${sx}" y="${sy+7}" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#1a1a18">${escSvg(l2)}</text>`;
+    } else {
+      svg+=`<text x="${sx}" y="${sy}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#1a1a18">${escSvg(label)}</text>`;
+    }
+  });
+  svg+="</svg>";
+  return`<div class="cm-wrap"><div class="cm-hdr">${esc(title)}</div><div class="cm-body">${svg}</div></div>`;
+}
 
 // ── Skeleton & display helpers ────────────────────────
 function showSkeleton(v){
