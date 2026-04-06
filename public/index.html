@@ -420,6 +420,7 @@ async function fetchOneLevel(topic,branch,level,prevContent,signal){
   const r=await fetch("/api/explore",opts);
   const d=await r.json();
   if(d.error) throw new Error(d.error);
+  if(!d.levels||!d.levels[level]) throw new Error("Empty response from server for level: "+level);
   return d.levels[level];
 }
 
