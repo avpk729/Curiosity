@@ -26,15 +26,49 @@ window.MathJax = {
   #sidebar-header{padding:18px 14px 12px;border-bottom:0.5px solid var(--border2);}
   #sidebar-header h1{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-0.01em;}
   #sidebar-header p{font-size:11px;color:var(--text3);margin-top:2px;}
-  #repo-search{width:100%;padding:7px 10px;font-size:13px;border:0.5px solid var(--border2);border-radius:8px;background:var(--bg2);color:var(--text);outline:none;margin-top:10px;}
-  #repo-search:focus{border-color:var(--accent);}
-  #repo-list{flex:1;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:2px;}
-  .repo-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:background 0.12s;}
-  .repo-item:hover{background:var(--bg2);}
-  .repo-item.active{background:var(--bg3);}
-  .repo-label{flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .repo-count{font-size:11px;color:var(--text3);background:var(--bg3);border-radius:99px;padding:1px 7px;flex-shrink:0;}
-  .repo-empty{font-size:12px;color:var(--text3);text-align:center;padding:28px 14px;line-height:1.6;}
+  #tree-search{width:100%;padding:7px 10px;font-size:13px;border:0.5px solid var(--border2);border-radius:8px;background:var(--bg2);color:var(--text);outline:none;margin-top:10px;}
+  #tree-search:focus{border-color:var(--accent);}
+  #tree-wrap{flex:1;overflow-y:auto;padding:8px 6px;}
+
+  /* Tree nodes */
+  .tree-subject{margin-bottom:2px;}
+  .tree-subject-header{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;cursor:pointer;transition:background 0.12s;user-select:none;}
+  .tree-subject-header:hover{background:var(--bg2);}
+  .tree-subject-header.open{background:var(--bg2);}
+  .tree-chevron{font-size:9px;color:var(--text3);transition:transform 0.18s;flex-shrink:0;width:10px;text-align:center;}
+  .tree-chevron.open{transform:rotate(90deg);}
+  .tree-subject-icon{font-size:13px;flex-shrink:0;}
+  .tree-subject-label{font-size:13px;font-weight:500;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tree-subject-count{font-size:10px;color:var(--text3);background:var(--bg3);border-radius:99px;padding:1px 6px;flex-shrink:0;}
+
+  .tree-subject-body{display:none;padding-left:16px;margin-bottom:4px;}
+  .tree-subject-body.open{display:block;}
+
+  /* Explored topics */
+  .tree-topic{margin-bottom:1px;}
+  .tree-topic-header{display:flex;align-items:center;gap:5px;padding:5px 8px;border-radius:7px;cursor:pointer;transition:background 0.12s;}
+  .tree-topic-header:hover{background:var(--bg2);}
+  .tree-topic-header.active{background:var(--accent-bg);}
+  .tree-topic-chevron{font-size:8px;color:var(--text3);transition:transform 0.18s;flex-shrink:0;width:9px;text-align:center;}
+  .tree-topic-chevron.open{transform:rotate(90deg);}
+  .tree-topic-label{font-size:13px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tree-topic-header.active .tree-topic-label{color:var(--accent-text);font-weight:500;}
+  .tree-topic-visits{font-size:10px;color:var(--text3);flex-shrink:0;}
+
+  .tree-topic-body{display:none;padding-left:14px;}
+  .tree-topic-body.open{display:block;}
+
+  /* Branch / subtopic items */
+  .tree-branch{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;cursor:pointer;transition:background 0.12s;font-size:12px;color:var(--text2);}
+  .tree-branch:hover{background:var(--bg2);color:var(--text);}
+  .tree-branch.active{color:var(--accent);background:var(--accent-bg);}
+  .tree-branch.active::before{content:"●";font-size:7px;color:var(--accent);flex-shrink:0;}
+  .tree-branch:not(.active)::before{content:"○";font-size:7px;color:var(--text3);flex-shrink:0;}
+  .tree-branch.suggestion{color:var(--text3);font-style:italic;}
+  .tree-branch.suggestion::before{content:"·";font-size:12px;color:var(--text3);flex-shrink:0;}
+
+  /* Divider between explored and suggestions */
+  .tree-section-label{font-size:10px;font-weight:500;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;padding:6px 8px 3px;}
 
   #main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
   #topbar{padding:18px 26px 0;}
@@ -154,11 +188,9 @@ window.MathJax = {
   <div id="sidebar-header">
     <h1>Curiosity Wikipedia</h1>
     <p>Academic knowledge, progressively explained</p>
-    <input id="repo-search" placeholder="Search topics..." oninput="filterRepo(this.value)" />
+    <input id="tree-search" placeholder="Search knowledge tree..." oninput="filterTree(this.value)" />
   </div>
-  <div id="repo-list">
-    <div class="repo-empty">Topics explored by all users appear here, ranked by visits.</div>
-  </div>
+  <div id="tree-wrap"></div>
 </div>
 
 <div id="main">
@@ -247,36 +279,164 @@ let currentTopic = null;
 let currentBranch = null;
 let currentLevel = "grade5";
 let currentCategory = "general";
-let cache = {}; // topic||branch -> { grade5, college, masters, phd }
-let imageCache = {}; // topic -> [{src, caption}]
-let repoAll = [];
-let visPrefs = { images: true, flowchart: true, conceptmap: true };
-let bgController = null; // AbortController for background fetches
+let cache = {};
+let imageCache = {};
+let bgController = null;
 
-function cacheKey(t,b){ return `${(t||"").toLowerCase()}||${b||""}`; }
+const SUBJECT_ICONS = {"Business & Management":"📊","Economics":"📈","Medicine":"🩺","Science":"🔬","Mathematics":"📐","History":"📜","Philosophy":"🧠","Technology":"💻","general":"🔭"};
+const ALL_SUBJECTS = ["Business & Management","Economics","Medicine","Science","Mathematics","History","Philosophy","Technology"];
 
-// ── Repo ───────────────────────────────────────────────
+let treeExpanded = {}; // subjectName -> bool
+let topicExpanded = {}; // topicLower -> bool
+let treeData = []; // [{topic, category, visits, branches:[]}]
+let filterQ = "";
+
+// Load expanded state from sessionStorage
+try { treeExpanded = JSON.parse(sessionStorage.getItem("treeExp")||"{}"); } catch(e){}
+try { topicExpanded = JSON.parse(sessionStorage.getItem("topicExp")||"{}"); } catch(e){}
+
+function saveTreeState(){
+  try { sessionStorage.setItem("treeExp", JSON.stringify(treeExpanded)); } catch(e){}
+  try { sessionStorage.setItem("topicExp", JSON.stringify(topicExpanded)); } catch(e){}
+}
+
 async function fetchRepo(){
-  try{ const r=await fetch("/api/repository"); const d=await r.json(); repoAll=d.topics||[]; renderRepo(repoAll); }catch(e){}
+  try {
+    const r = await fetch("/api/repository");
+    const d = await r.json();
+    treeData = d.topics || [];
+    renderTree();
+  } catch(e){}
 }
-function renderRepo(items){
-  const el=document.getElementById("repo-list");
-  if(!items.length){el.innerHTML='<div class="repo-empty">No topics yet. Start exploring!</div>';return;}
-  el.innerHTML=items.map(t=>`<div class="repo-item${currentTopic===t.topic?' active':''}" onclick="loadTopic('${esc(t.topic)}','${esc(t.category)}')"><span class="repo-label">${esc(t.topic)}</span><span class="repo-count">×${t.visits}</span></div>`).join("");
-}
-function filterRepo(q){ renderRepo(q?repoAll.filter(t=>t.topic.toLowerCase().includes(q.toLowerCase())):repoAll); }
 
-// ── Subjects ───────────────────────────────────────────
-function selectSubject(name){
-  document.querySelectorAll(".subject-btn").forEach(b=>b.classList.toggle("active",b.textContent===name));
-  currentCategory=name;
-  const panel=document.getElementById("subtopics-panel");
-  const grid=document.getElementById("subtopics-grid");
-  const chips=SUBTOPICS[name]||[];
-  if(chips.length){ grid.innerHTML=chips.map(s=>`<div class="subtopic-chip" onclick="loadTopic('${esc(s)}','${esc(name)}')">${esc(s)}</div>`).join(""); panel.classList.add("visible"); }
-  else panel.classList.remove("visible");
+function filterRepo(q){ filterQ=q; renderTree(); } // compat
+function filterTree(q){ filterQ=q; renderTree(); }
+
+function renderTree(){
+  const wrap = document.getElementById("tree-wrap");
+  if(!wrap) return;
+
+  // Group topics by category
+  const bySubject = {};
+  ALL_SUBJECTS.forEach(s => bySubject[s] = []);
+  bySubject["general"] = [];
+  treeData.forEach(t => {
+    const cat = t.category && bySubject[t.category] ? t.category : "general";
+    bySubject[cat].push(t);
+  });
+
+  // Apply filter
+  const q = filterQ.toLowerCase();
+
+  let html = "";
+  const subjectsToShow = ALL_SUBJECTS.concat(bySubject["general"].length ? ["general"] : []);
+
+  subjectsToShow.forEach(subject => {
+    const topics = bySubject[subject] || [];
+    const icon = SUBJECT_ICONS[subject] || "📚";
+
+    // Filter topics
+    const filteredTopics = q
+      ? topics.filter(t => t.topic.toLowerCase().includes(q))
+      : topics;
+
+    // For subjects with no explored topics, still show them collapsed (unless filtering)
+    const isOpen = treeExpanded[subject] || (q && filteredTopics.length > 0);
+    const exploredCount = topics.length;
+
+    // Auto-expand active subject
+    const isActiveSubject = treeData.some(t =>
+      (t.category === subject || (!bySubject[t.category] && subject === "general")) &&
+      t.topic === currentTopic
+    );
+    const finalOpen = isOpen || isActiveSubject;
+
+    html += `<div class="tree-subject">
+      <div class="tree-subject-header${finalOpen?' open':''}" onclick="toggleSubject('${esc(subject)}')">
+        <span class="tree-chevron${finalOpen?' open':''}">›</span>
+        <span class="tree-subject-icon">${icon}</span>
+        <span class="tree-subject-label">${esc(subject==="general"?"Other":subject)}</span>
+        ${exploredCount ? `<span class="tree-subject-count">${exploredCount}</span>` : ""}
+      </div>
+      <div class="tree-subject-body${finalOpen?' open':''}">`;
+
+    if(filteredTopics.length === 0 && !q){
+      // Show curated suggestions for empty subjects
+      const suggestions = (SUBTOPICS[subject]||[]).slice(0,4);
+      if(suggestions.length){
+        html += `<div class="tree-section-label">Suggested</div>`;
+        suggestions.forEach(s => {
+          html += `<div class="tree-branch suggestion" onclick="loadTopic('${esc(s)}','${esc(subject)}')" title="Explore ${esc(s)}">${esc(s)}</div>`;
+        });
+      }
+    } else {
+      filteredTopics.forEach(t => {
+        const tLower = t.topic.toLowerCase();
+        const isActiveTopic = currentTopic === t.topic;
+        const isTopicOpen = topicExpanded[tLower] || isActiveTopic;
+        const exploredBranches = t.branches || [];
+        const hasBranches = exploredBranches.length > 0;
+        const suggestions = (SUBTOPICS[subject]||[]).filter(s => s.toLowerCase() !== tLower).slice(0,5);
+
+        html += `<div class="tree-topic">
+          <div class="tree-topic-header${isActiveTopic&&!currentBranch?' active':''}" onclick="handleTopicClick('${esc(t.topic)}','${esc(t.category||subject)}','${esc(tLower)}')">
+            <span class="tree-topic-chevron${isTopicOpen?' open':''}">›</span>
+            <span class="tree-topic-label">${esc(t.topic)}</span>
+            <span class="tree-topic-visits">×${t.visits}</span>
+          </div>
+          <div class="tree-topic-body${isTopicOpen?' open':''}">`;
+
+        // Explored branches
+        if(exploredBranches.length){
+          html += `<div class="tree-section-label">Explored</div>`;
+          exploredBranches.forEach(b => {
+            const isActiveBranch = isActiveTopic && currentBranch === b;
+            html += `<div class="tree-branch${isActiveBranch?' active':''}" onclick="doExplore('${esc(t.topic)}','${esc(b)}')">${esc(b)}</div>`;
+          });
+        }
+
+        // Suggested subtopics from curated list
+        if(suggestions.length){
+          html += `<div class="tree-section-label">Dive deeper</div>`;
+          suggestions.forEach(s => {
+            html += `<div class="tree-branch suggestion" onclick="doExplore('${esc(t.topic)}','${esc(s)}')">${esc(s)}</div>`;
+          });
+        }
+
+        html += `</div></div>`;
+      });
+    }
+
+    html += `</div></div>`;
+  });
+
+  wrap.innerHTML = html || `<div style="font-size:12px;color:var(--text3);text-align:center;padding:28px 14px;line-height:1.6;">Start exploring to build your knowledge tree.</div>`;
 }
-function loadTopic(topic,category){ document.getElementById("topic-input").value=topic; currentCategory=category||"general"; explore(); }
+
+function toggleSubject(subject){
+  treeExpanded[subject] = !treeExpanded[subject];
+  saveTreeState();
+  renderTree();
+}
+
+function handleTopicClick(topic, category, topicLower){
+  if(currentTopic === topic && !currentBranch){
+    // Already on this topic — just toggle expand
+    topicExpanded[topicLower] = !topicExpanded[topicLower];
+    saveTreeState();
+    renderTree();
+  } else {
+    topicExpanded[topicLower] = true;
+    saveTreeState();
+    loadTopic(topic, category);
+  }
+}
+
+function loadTopic(topic, category){
+  document.getElementById("topic-input").value = topic;
+  currentCategory = category || "general";
+  explore();
+}
 
 // ── Visual toggles ────────────────────────────────────
 function toggleVis(type){
@@ -330,6 +490,14 @@ async function doExplore(topic, branch){
 
   const key=cacheKey(topic,branch);
   currentTopic=topic; currentBranch=branch; currentLevel="grade5";
+
+  // Auto-expand the subject for this topic
+  if(currentCategory && currentCategory !== "general"){
+    treeExpanded[currentCategory] = true;
+  }
+  topicExpanded[(topic||"").toLowerCase()] = true;
+  saveTreeState();
+  renderTree();
 
   // Reset tabs
   LEVELS.forEach(l=>{
@@ -924,6 +1092,8 @@ let imageCache = {}; // topic -> [{src, caption}]
 let repoAll = [];
 let visPrefs = { images: true, flowchart: true, conceptmap: true };
 let bgController = null; // AbortController for background fetches
+
+let visPrefs = { images: true, flowchart: true, conceptmap: true };
 
 function cacheKey(t,b){ return `${(t||"").toLowerCase()}||${b||""}`; }
 
