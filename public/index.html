@@ -650,7 +650,8 @@ function renderParagraph(text, lvl){
   parts.forEach(part=>{
     const bm=part.match(/%%BLOCK(\d+)%%/);
     if(bm){
-      html+=`<div class="formula-card"><div class="formula-card-label">Formula</div><div class="formula-card-body">\\[${blocks[parseInt(bm[1])]}\\]</div></div>`;
+      // Use a data attribute to carry raw LaTeX — avoids all escaping issues
+      html+=`<div class="formula-card"><div class="formula-card-label">Formula</div><div class="formula-card-body formula-render" data-latex="${esc(blocks[parseInt(bm[1])])}"></div></div>`;
     } else if(part.trim()){
       const mathTokens=[];
       let prose=part.replace(/\$((?!\$)[^\n$]+?)\$/g,(m)=>{ mathTokens.push(m); return`%%MATH${mathTokens.length-1}%%`; });
@@ -769,7 +770,20 @@ function showEmpty(v){ document.getElementById("empty").style.display=v?"flex":"
 
 function typesetMath(el){
   if(!el) return;
-  const doIt=()=>{ if(window.MathJax&&window.MathJax.typesetPromise){ window.MathJax.typesetClear([el]); window.MathJax.typesetPromise([el]).catch(()=>{}); } };
+  const doIt=()=>{
+    if(!window.MathJax||!window.MathJax.typesetPromise) return;
+    // Populate formula cards from data-latex attribute (avoids innerHTML escaping)
+    el.querySelectorAll(".formula-render[data-latex]").forEach(card=>{
+      if(!card.dataset.populated){
+        card.textContent = ""; // clear
+        const tex = document.createTextNode("\\[" + card.dataset.latex + "\\]");
+        card.appendChild(tex);
+        card.dataset.populated = "1";
+      }
+    });
+    window.MathJax.typesetClear([el]);
+    window.MathJax.typesetPromise([el]).catch(()=>{});
+  };
   if(window._mathJaxReady) doIt();
   else{ const iv=setInterval(()=>{ if(window._mathJaxReady){clearInterval(iv);doIt();} },200); }
 }
