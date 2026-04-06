@@ -460,17 +460,19 @@ function handleTextSelection(e){
   const popup = document.getElementById("selection-popup");
   const sel = window.getSelection();
   const text = sel ? sel.toString().trim() : "";
-  // Only show inside article body, reasonable length
   if(text.length<3||text.length>80||!document.getElementById("article-body")?.contains(sel?.anchorNode)){
     popup.style.display="none"; selectedText=""; return;
   }
   selectedText = text;
   const range = sel.getRangeAt(0);
   const rect = range.getBoundingClientRect();
+  // Use fixed positioning — rect coords are already viewport-relative
+  const popupX = rect.left + rect.width / 2;
+  const popupY = rect.top - 44; // 44px above selection
   popup.textContent = `\uD83D\uDD0D Explore: \u201C${text.length>30?text.slice(0,30)+"\u2026":text}\u201D`;
   popup.style.display = "block";
-  popup.style.left = (rect.left + rect.width/2 + window.scrollX) + "px";
-  popup.style.top = (rect.top + window.scrollY - 40) + "px";
+  popup.style.left = popupX + "px";
+  popup.style.top = Math.max(8, popupY) + "px"; // clamp to viewport top
 }
 document.addEventListener("mousedown", e=>{if(e.target.id!=="selection-popup"){document.getElementById("selection-popup").style.display="none";}});
 function exploreSelection(){
