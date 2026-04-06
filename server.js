@@ -35,8 +35,14 @@ db.exec(`
   );
 `);
 
-// Add visuals column if upgrading from old schema
-try { db.exec("ALTER TABLE explanations ADD COLUMN visuals TEXT"); } catch(e){}
+// Safe schema migration — add columns if missing
+const cols = db.prepare("PRAGMA table_info(explanations)").all().map(c => c.name);
+if (!cols.includes("visuals")) {
+  try { db.exec("ALTER TABLE explanations ADD COLUMN visuals TEXT"); } catch(e) { console.log("visuals col:", e.message); }
+}
+
+// Validate Claude API key on startup
+if (!CLAUDE_API_KEY) console.error("⚠️  CLAUDE_API_KEY environment variable is not set!");
 
 const LEVEL_INSTRUCTIONS = {
   grade5: `You are a warm, brilliant teacher explaining to a curious 10-year-old. Use very simple words, vivid everyday analogies, and short friendly sentences. No jargon. Make it memorable and delightful. This is the reader's very first encounter with this topic.`,
