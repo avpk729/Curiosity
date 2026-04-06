@@ -10,7 +10,6 @@ const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// --- DB Setup ---
 const db = new Database("curiosity.db");
 db.exec(`
   CREATE TABLE IF NOT EXISTS topics (
@@ -30,147 +29,173 @@ db.exec(`
     content TEXT NOT NULL,
     branches TEXT,
     citations TEXT,
+    visuals TEXT,
     created_at INTEGER,
     UNIQUE(topic_lower, branch, level)
   );
 `);
 
-// --- Helpers ---
-const LEVELS = ["eli5", "intermediate", "advanced", "expert"];
+// Add visuals column if upgrading from old schema
+try { db.exec("ALTER TABLE explanations ADD COLUMN visuals TEXT"); } catch(e){}
 
 const LEVEL_INSTRUCTIONS = {
-  eli5: "You are a brilliant, warm teacher explaining to a curious child (age 5-8). Use very simple words, vivid everyday analogies, short sentences, and a friendly tone. No jargon whatsoever. Make it delightful and memorable.",
-  intermediate: "You are an engaging teacher speaking to a curious adult with general education. Use clear prose, introduce key terms naturally within sentences, use relatable analogies. Assume high-school level background.",
-  advanced: "You are a knowledgeable expert writing for someone with undergraduate-level domain knowledge. Use proper terminology, explain mechanisms with precision, include mathematical formulations where genuinely useful (LaTeX: $...$ inline, $$...$$ block). Be thorough and technically accurate.",
-  expert: "You are writing for a fellow specialist. Use full technical and mathematical rigor (LaTeX: $...$ inline, $$...$$ block), domain-specific language, reference key theories, models, and seminal works. Discuss nuance, limitations, and open questions in the field."
+  grade5: `You are a warm, brilliant teacher explaining to a curious 10-year-old. Use very simple words, vivid everyday analogies, and short friendly sentences. No jargon. Make it memorable and delightful. This is the reader's very first encounter with this topic.`,
+  college: `You are explaining to a college undergraduate who has ALREADY read and fully understood a basic introductory explanation of this topic. DO NOT re-explain the basic premise or restate introductory concepts. Build directly on that foundation — introduce proper terminology, mechanisms, and real-world applications.`,
+  masters: `You are explaining to a graduate student who fully understands both the introductory and undergraduate treatments of this topic. DO NOT recap basics. Go directly into advanced mechanisms, theoretical frameworks, mathematical formulations where relevant (LaTeX: $...$ inline, $$...$$ block), nuance, and research context. Introduce sub-concepts that would have been premature at lower levels.`,
+  phd: `You are writing for a doctoral researcher who has mastered all previous levels of understanding of this topic. DO NOT revisit anything covered before. Focus exclusively on: cutting-edge research questions, open problems, competing theoretical frameworks, mathematical rigour (LaTeX: $...$ inline, $$...$$ block), seminal and recent literature, methodological debates, and frontier ideas entirely new to this level.`
 };
 
-const SYSTEM_PROMPT = `You are Curiosity Wikipedia — an elegant academic knowledge engine. You only explain real, legitimate academic topics across all fields of knowledge. You refuse any NSFW, harmful, politically inflammatory, or non-academic requests politely and briefly.
+const SYSTEM_PROMPT = `You are Curiosity Wikipedia — an elegant, progressive academic knowledge engine. Each explanation builds on the previous level — never restates basics already covered. You only explain legitimate academic topics across all fields of knowledge. Refuse any NSFW, harmful, or non-academic requests politely.
 
-Your writing style is narrative and flowing — like the best popular science writing. You write in well-formed paragraphs. You NEVER use markdown symbols like **, ##, *, or bullet points with hyphens in your explanation text. Everything is written as beautiful prose.
+Your writing style is narrative and flowing — like the best academic prose and science writing. You write in well-formed paragraphs grouped under clear thematic section headings. You NEVER use markdown symbols like **, ##, *, or bullet points. Everything is beautiful flowing prose.
 
-You always cite real, verifiable academic sources inline using [1], [2] etc. notation, and provide a bibliography at the end.`;
+Structure every explanation as 3-5 thematic sections, each starting with [HEADING: Section Title Here].
 
-function buildPrompt(topic, level, branch) {
+Always cite real, verifiable academic sources inline as [1], [2] etc. and include a bibliography.`;
+
+function buildPrompt(topic, level, branch, prevContent) {
   const instruction = LEVEL_INSTRUCTIONS[level];
-  const branchContext = branch ? ` Focus specifically on the subtopic: "${branch}" within the context of "${topic}".` : "";
-  return `${instruction}
+  const branchCtx = branch ? ` Focus specifically on the subtopic: "${branch}" within "${topic}".` : "";
+  const prevCtx = prevContent
+    ? `\n\nThe reader has ALREADY studied this topic at the previous level. Here is what they learned — do NOT repeat or re-introduce any of this:\n---\n${prevContent}\n---\nBuild directly on top of this knowledge.\n`
+    : "";
 
-Topic to explain: "${branch || topic}"${branchContext}
+  return `${instruction}${prevCtx}
 
-Write a thorough explanation at this level. Use flowing narrative prose — NO bullet points, NO markdown headers, NO bold (**) or italic (*) markers in the explanation text. Write in well-formed paragraphs only.
+Topic: "${branch || topic}"${branchCtx}
 
-Where equations genuinely aid understanding, include them as LaTeX ($...$ for inline math, $$...$$ for block equations).
+Write a thorough explanation in 3-5 thematic sections. Each section begins with exactly:
+[HEADING: Your Section Title Here]
+Then flowing narrative prose paragraphs. No bullet points, no markdown, no bold markers.
 
-After your explanation, provide inline citations using [1], [2] etc. for any claims, theories, or named concepts you reference.
+Include LaTeX math where it genuinely aids understanding ($...$ inline, $$...$$ block).
 
-Then output EXACTLY this JSON block and nothing after it, wrapped in <META> tags:
+After your explanation, provide inline citations [1], [2] etc.
+
+Then output EXACTLY this JSON in <META> tags and nothing after:
 <META>
 {
   "branches": ["subtopic 1", "subtopic 2", "subtopic 3", "subtopic 4"],
   "bibliography": [
-    {"ref": "1", "authors": "Author, A.", "year": "2020", "title": "Full title of work", "source": "Journal or Publisher"},
-    {"ref": "2", "authors": "Author, B. & Author, C.", "year": "2018", "title": "Full title of work", "source": "Journal or Publisher"}
-  ]
+    {"ref": "1", "authors": "Author, A.", "year": "2020", "title": "Full title", "source": "Journal or Publisher"}
+  ],
+  "flowchart": {
+    "include": true or false,
+    "title": "Short descriptive title",
+    "nodes": [
+      {"id": "1", "label": "Step or concept name"},
+      {"id": "2", "label": "Next step or concept"}
+    ]
+  },
+  "conceptMap": {
+    "include": true or false,
+    "title": "Short title",
+    "nodes": [
+      {"label": "Central topic"},
+      {"label": "Related concept 1"},
+      {"label": "Related concept 2"},
+      {"label": "Related concept 3"},
+      {"label": "Related concept 4"},
+      {"label": "Related concept 5"}
+    ]
+  }
 }
 </META>
 
-Branches should be genuinely interesting subtopics to explore next (2-5 words each). Bibliography entries must be real, verifiable academic sources — books, journal articles, textbooks. Never invent sources.`;
+For flowchart: include=true only if this topic has a clear sequential process or causal chain (e.g. how a cell divides, how monetary policy works, how a compiler works). Keep nodes to 4-7 steps, labels max 5 words each.
+For conceptMap: include=true for topics with multiple interconnected sub-concepts (e.g. economic theories, philosophical movements, biological systems). First node is the central hub. 4-6 spoke nodes.
+If neither adds genuine comprehension value, set include=false for both.
+Branches: 4 genuinely interesting subtopics (2-5 words each). Bibliography: real verifiable sources only.`;
 }
 
-async function fetchLevel(topic, level, branch) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": CLAUDE_API_KEY,
-      "anthropic-version": "2023-06-01"
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1800,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: buildPrompt(topic, level, branch) }]
-    })
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  const raw = data.content?.map(b => b.text || "").join("") || "";
-  const metaMatch = raw.match(/<META>([\s\S]*?)<\/META>/);
-  let branches = [], bibliography = [];
-  let content = raw;
-  if (metaMatch) {
-    try {
-      const json = JSON.parse(metaMatch[1].trim());
-      branches = json.branches || [];
-      bibliography = json.bibliography || [];
-    } catch {}
-    content = raw.replace(/<META>[\s\S]*?<\/META>/, "").trim();
-  }
-  return { content, branches, bibliography };
-}
-
-// --- Routes ---
-
-// Get all levels for a topic (parallel fetch or from cache)
 app.post("/api/explore", async (req, res) => {
-  const { topic, branch } = req.body;
-  if (!topic || typeof topic !== "string" || topic.trim().length < 2) {
+  const { topic, branch, category, level, prevContent } = req.body;
+  if (!topic || typeof topic !== "string" || topic.trim().length < 2)
     return res.status(400).json({ error: "Invalid topic" });
-  }
+
   const topicClean = topic.trim();
   const topicLower = topicClean.toLowerCase();
   const branchKey = branch ? branch.trim() : null;
+  const lvl = level || "grade5";
 
-  // Check cache for all 4 levels
-  const cached = {};
-  for (const lvl of LEVELS) {
-    const row = db.prepare("SELECT content, branches, citations FROM explanations WHERE topic_lower=? AND branch IS ? AND level=?")
-      .get(topicLower, branchKey, lvl);
-    if (row) {
-      cached[lvl] = {
-        content: row.content,
-        branches: JSON.parse(row.branches || "[]"),
-        bibliography: JSON.parse(row.citations || "[]")
-      };
-    }
-  }
+  // Check cache for this specific level
+  const cached = db.prepare("SELECT content, branches, citations, visuals FROM explanations WHERE topic_lower=? AND branch IS ? AND level=?")
+    .get(topicLower, branchKey, lvl);
 
-  const missing = LEVELS.filter(l => !cached[l]);
-
-  if (missing.length > 0) {
-    // Fetch missing levels in parallel
-    try {
-      const results = await Promise.all(missing.map(lvl => fetchLevel(topicClean, lvl, branchKey)));
-      const now = Date.now();
-      const insert = db.prepare(`
-        INSERT OR REPLACE INTO explanations (topic_lower, branch, level, content, branches, citations, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `);
-      missing.forEach((lvl, i) => {
-        const r = results[i];
-        insert.run(topicLower, branchKey, lvl, r.content, JSON.stringify(r.branches), JSON.stringify(r.bibliography), now);
-        cached[lvl] = r;
-      });
-    } catch (err) {
-      console.error("Claude fetch error:", err.message);
-      return res.status(500).json({ error: "Failed to fetch explanation. Check API key or try again." });
-    }
-  }
-
-  // Update visit count
-  const existing = db.prepare("SELECT id FROM topics WHERE topic_lower=?").get(topicLower);
-  if (existing) {
-    db.prepare("UPDATE topics SET visits=visits+1, last_visited=? WHERE topic_lower=?").run(Date.now(), topicLower);
+  let result;
+  if (cached) {
+    result = {
+      content: cached.content,
+      branches: JSON.parse(cached.branches || "[]"),
+      bibliography: JSON.parse(cached.citations || "[]"),
+      ...JSON.parse(cached.visuals || "{}")
+    };
   } else {
-    db.prepare("INSERT INTO topics (topic, topic_lower, category, visits, last_visited, created_at) VALUES (?,?,?,1,?,?)")
-      .run(topicClean, topicLower, req.body.category || "general", Date.now(), Date.now());
+    // Fetch from Claude
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": CLAUDE_API_KEY,
+          "anthropic-version": "2023-06-01"
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 2400,
+          system: SYSTEM_PROMPT,
+          messages: [{ role: "user", content: buildPrompt(topicClean, lvl, branchKey, prevContent) }]
+        })
+      });
+      const data = await response.json();
+      if (data.error) throw new Error(data.error.message);
+
+      const raw = data.content?.map(b => b.text || "").join("") || "";
+      const metaMatch = raw.match(/<META>([\s\S]*?)<\/META>/);
+      let branches = [], bibliography = [], flowchart = null, conceptMap = null;
+      let content = raw;
+
+      if (metaMatch) {
+        try {
+          const json = JSON.parse(metaMatch[1].trim());
+          branches = json.branches || [];
+          bibliography = json.bibliography || [];
+          if (json.flowchart?.include && json.flowchart.nodes?.length) flowchart = json.flowchart;
+          if (json.conceptMap?.include && json.conceptMap.nodes?.length) conceptMap = json.conceptMap;
+        } catch(e) {}
+        content = raw.replace(/<META>[\s\S]*?<\/META>/, "").trim();
+      }
+
+      const visuals = {};
+      if (flowchart) { visuals.flowchart = flowchart.nodes; visuals.flowchartTitle = flowchart.title; }
+      if (conceptMap) { visuals.conceptMap = conceptMap.nodes; visuals.conceptMapTitle = conceptMap.title; }
+
+      const now = Date.now();
+      db.prepare(`INSERT OR REPLACE INTO explanations (topic_lower, branch, level, content, branches, citations, visuals, created_at) VALUES (?,?,?,?,?,?,?,?)`)
+        .run(topicLower, branchKey, lvl, content, JSON.stringify(branches), JSON.stringify(bibliography), JSON.stringify(visuals), now);
+
+      result = { content, branches, bibliography, ...visuals };
+
+    } catch (err) {
+      console.error("Claude error:", err.message);
+      return res.status(500).json({ error: "Failed to fetch explanation. Please try again." });
+    }
   }
 
-  res.json({ levels: cached });
+  // Update visit count (only on grade5 = first load of topic)
+  if (lvl === "grade5") {
+    const existing = db.prepare("SELECT id FROM topics WHERE topic_lower=?").get(topicLower);
+    if (existing) {
+      db.prepare("UPDATE topics SET visits=visits+1, last_visited=? WHERE topic_lower=?").run(Date.now(), topicLower);
+    } else {
+      db.prepare("INSERT INTO topics (topic, topic_lower, category, visits, last_visited, created_at) VALUES (?,?,?,1,?,?)")
+        .run(topicClean, topicLower, category || "general", Date.now(), Date.now());
+    }
+  }
+
+  res.json({ levels: { [lvl]: result } });
 });
 
-// Get repository (top topics by visits)
 app.get("/api/repository", (req, res) => {
   const rows = db.prepare("SELECT topic, category, visits FROM topics ORDER BY visits DESC LIMIT 100").all();
   res.json({ topics: rows });

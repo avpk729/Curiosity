@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Curiosity Wikipedia</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js" async></script>
+<style>
+  :root {
+    --bg:#ffffff;--bg2:#f7f6f3;--bg3:#f0efe9;
+    --text:#1a1a18;--text2:#5a5a56;--text3:#9a9890;
+    --border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.16);
+    --accent:#1D9E75;--accent-bg:#E1F5EE;--accent-text:#0a5a40;
+    --radius:10px;--font:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{--bg:#1a1a18;--bg2:#222220;--bg3:#2a2a27;--text:#e8e6de;--text2:#a8a69e;--text3:#6a6860;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);--accent-bg:#0a3528;--accent-text:#5ecfa8;}
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+  #sidebar{width:252px;min-width:252px;border-right:0.5px solid var(--border2);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;overflow:hidden;}
+  #sidebar-header{padding:18px 14px 12px;border-bottom:0.5px solid var(--border2);}
+  #sidebar-header h1{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-0.01em;}
+  #sidebar-header p{font-size:11px;color:var(--text3);margin-top:2px;}
+  #repo-search{width:100%;padding:7px 10px;font-size:13px;border:0.5px solid var(--border2);border-radius:8px;background:var(--bg2);color:var(--text);outline:none;margin-top:10px;}
+  #repo-search:focus{border-color:var(--accent);}
+  #repo-list{flex:1;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:2px;}
+  .repo-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:background 0.12s;}
+  .repo-item:hover{background:var(--bg2);}
+  .repo-item.active{background:var(--bg3);}
+  .repo-label{flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .repo-count{font-size:11px;color:var(--text3);background:var(--bg3);border-radius:99px;padding:1px 7px;flex-shrink:0;}
+  .repo-empty{font-size:12px;color:var(--text3);text-align:center;padding:28px 14px;line-height:1.6;}
+
+  #main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+  #topbar{padding:18px 26px 0;}
+  #search-row{display:flex;gap:8px;margin-bottom:12px;}
+  #topic-input{flex:1;font-size:15px;padding:10px 15px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);outline:none;transition:border-color 0.15s;}
+  #topic-input:focus{border-color:var(--accent);}
+  #explore-btn{padding:10px 20px;font-size:13px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;white-space:nowrap;transition:background 0.12s;}
+  #explore-btn:hover:not(:disabled){background:var(--bg2);}
+  #explore-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
+  #subjects{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
+  .subject-btn{padding:4px 12px;font-size:12px;font-weight:500;border-radius:99px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all 0.12s;}
+  .subject-btn:hover,.subject-btn.active{background:var(--accent-bg);color:var(--accent);border-color:var(--accent);}
+
+  #subtopics-panel{padding:0 26px 12px;display:none;}
+  #subtopics-panel.visible{display:block;}
+  #subtopics-grid{display:flex;flex-wrap:wrap;gap:5px;}
+  .subtopic-chip{padding:4px 11px;font-size:12px;border-radius:8px;border:0.5px solid var(--border2);background:var(--bg2);color:var(--text2);cursor:pointer;transition:all 0.12s;}
+  .subtopic-chip:hover{background:var(--bg3);color:var(--text);}
+
+  /* Visual toggle bar */
+  #visual-bar{display:none;padding:0 26px 10px;align-items:center;gap:8px;}
+  #visual-bar.visible{display:flex;}
+  .visual-toggle-label{font-size:12px;color:var(--text3);margin-right:4px;}
+  .vis-btn{padding:4px 12px;font-size:12px;font-weight:500;border-radius:99px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all 0.12s;display:flex;align-items:center;gap:5px;}
+  .vis-btn:hover{background:var(--bg2);}
+  .vis-btn.active{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent);}
+  .vis-btn svg{width:13px;height:13px;flex-shrink:0;}
+
+  #level-tabs{display:flex;border-bottom:0.5px solid var(--border2);padding:0 26px;}
+  .level-tab{padding:10px 18px;font-size:13px;font-weight:500;color:var(--text3);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.12s;margin-bottom:-0.5px;display:flex;align-items:center;gap:7px;}
+  .level-tab:hover{color:var(--text2);}
+  .level-tab.active{color:var(--text);border-bottom-color:var(--accent);}
+  .level-dot{width:6px;height:6px;border-radius:50%;background:var(--border2);transition:background 0.3s;flex-shrink:0;}
+  .level-tab.loading-now .level-dot{background:var(--accent);animation:pulse 0.8s ease-in-out infinite;}
+  .level-tab.loaded .level-dot{background:#63C4A0;}
+  .level-tab.active .level-dot{background:var(--accent);}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+
+  #content{flex:1;overflow-y:auto;padding:26px 26px 80px;max-width:820px;}
+
+  /* Skeleton loader */
+  .skeleton{background:var(--bg2);border-radius:6px;animation:shimmer 1.4s ease-in-out infinite;}
+  @keyframes shimmer{0%,100%{opacity:0.5;}50%{opacity:1;}}
+  .skel-title{height:32px;width:55%;margin-bottom:16px;}
+  .skel-meta{height:14px;width:30%;margin-bottom:24px;}
+  .skel-heading{height:16px;width:40%;margin-bottom:12px;}
+  .skel-p{height:14px;margin-bottom:8px;}
+  .skel-p.w90{width:90%;}
+  .skel-p.w75{width:75%;}
+  .skel-p.w85{width:85%;}
+
+  #empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:55vh;gap:12px;color:var(--text3);}
+  #empty .icon{font-size:38px;}
+  #empty p{font-size:14px;text-align:center;max-width:360px;line-height:1.7;}
+
+  #article{display:none;}
+  #article.visible{display:block;}
+  #article-header{margin-bottom:24px;}
+  #article-breadcrumb{font-size:12px;color:var(--text3);margin-bottom:8px;}
+  #article-breadcrumb span{color:var(--text2);}
+  #article-title{font-size:28px;font-weight:600;letter-spacing:-0.025em;color:var(--text);line-height:1.2;}
+  #article-meta{font-size:12px;color:var(--text3);margin-top:5px;}
+  .level-progression{display:inline-flex;align-items:center;gap:5px;margin-top:10px;flex-wrap:wrap;}
+  .prog-step{padding:2px 9px;border-radius:99px;font-size:11px;font-weight:500;}
+  .prog-step.done{background:var(--accent-bg);color:var(--accent-text);}
+  .prog-step.current{background:var(--accent);color:#fff;}
+  .prog-step.future{background:var(--bg2);color:var(--text3);}
+  .prog-arrow{color:var(--text3);font-size:10px;}
+
+  .section-block{margin-bottom:32px;}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:0.5px solid var(--border);}
+  .section-title{font-size:15px;font-weight:600;color:var(--text);letter-spacing:-0.01em;}
+  .deeper-btn{display:flex;align-items:center;gap:4px;padding:4px 10px;font-size:11px;font-weight:500;border-radius:99px;border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;transition:all 0.12s;flex-shrink:0;}
+  .deeper-btn:hover{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent);}
+  .section-block p{font-size:15.5px;line-height:1.82;color:var(--text);margin-bottom:16px;}
+  .section-block p:last-child{margin-bottom:0;}
+
+  /* Images */
+  .image-strip{display:flex;gap:10px;margin:16px 0;flex-wrap:wrap;}
+  .img-card{border-radius:8px;overflow:hidden;border:0.5px solid var(--border);background:var(--bg2);flex:1;min-width:160px;max-width:260px;}
+  .img-card img{width:100%;height:140px;object-fit:cover;display:block;}
+  .img-caption{font-size:11px;color:var(--text3);padding:6px 8px;line-height:1.4;}
+
+  /* Flowchart */
+  .flowchart-wrap{margin:20px 0;background:var(--bg2);border-radius:12px;border:0.5px solid var(--border);overflow:hidden;}
+  .flowchart-header{padding:10px 16px;font-size:12px;font-weight:500;color:var(--text3);border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:6px;}
+  .flowchart-header svg{width:13px;height:13px;opacity:0.6;}
+  .flowchart-body{padding:16px;overflow-x:auto;}
+  .flowchart-body svg{display:block;margin:0 auto;}
+
+  /* Concept map */
+  .concept-map-wrap{margin:20px 0;background:var(--bg2);border-radius:12px;border:0.5px solid var(--border);}
+  .concept-map-header{padding:10px 16px;font-size:12px;font-weight:500;color:var(--text3);border-bottom:0.5px solid var(--border);}
+  .concept-map-body{padding:12px;overflow-x:auto;}
+
+  #branches{margin-top:30px;padding-top:22px;border-top:0.5px solid var(--border);}
+  #branches h3{font-size:11px;font-weight:600;color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.07em;}
+  #branches-grid{display:flex;flex-wrap:wrap;gap:8px;}
+  .branch-btn{padding:7px 15px;font-size:13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;transition:all 0.12s;}
+  .branch-btn:hover{background:var(--bg2);border-color:var(--accent);color:var(--accent);}
+
+  #bibliography{margin-top:28px;padding-top:20px;border-top:0.5px solid var(--border);}
+  #bibliography h3{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:14px;}
+  .citation-item{display:flex;gap:10px;margin-bottom:10px;font-size:13px;color:var(--text2);line-height:1.65;}
+  .citation-num{color:var(--accent);font-weight:600;min-width:22px;flex-shrink:0;}
+  .citation-text em{color:var(--text);font-style:italic;}
+
+  /* Loading spinner for background tabs */
+  .tab-spinner{display:inline-block;width:10px;height:10px;border:1.5px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;margin-left:4px;vertical-align:middle;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div id="sidebar-header">
+    <h1>Curiosity Wikipedia</h1>
+    <p>Academic knowledge, progressively explained</p>
+    <input id="repo-search" placeholder="Search topics..." oninput="filterRepo(this.value)" />
+  </div>
+  <div id="repo-list">
+    <div class="repo-empty">Topics explored by all users appear here, ranked by visits.</div>
+  </div>
+</div>
+
+<div id="main">
+  <div id="topbar">
+    <div id="search-row">
+      <input id="topic-input" placeholder="What are you curious about? Any academic topic..." onkeydown="if(event.key==='Enter')explore()" />
+      <button id="explore-btn" onclick="explore()">Explore ↗</button>
+    </div>
+    <div id="subjects">
+      <button class="subject-btn" onclick="selectSubject('Business & Management')">Business & Management</button>
+      <button class="subject-btn" onclick="selectSubject('Economics')">Economics</button>
+      <button class="subject-btn" onclick="selectSubject('Medicine')">Medicine</button>
+      <button class="subject-btn" onclick="selectSubject('Science')">Science</button>
+      <button class="subject-btn" onclick="selectSubject('Mathematics')">Mathematics</button>
+      <button class="subject-btn" onclick="selectSubject('History')">History</button>
+      <button class="subject-btn" onclick="selectSubject('Philosophy')">Philosophy</button>
+      <button class="subject-btn" onclick="selectSubject('Technology')">Technology</button>
+    </div>
+  </div>
+
+  <div id="subtopics-panel"><div id="subtopics-grid"></div></div>
+
+  <!-- Visual options bar -->
+  <div id="visual-bar">
+    <span class="visual-toggle-label">Show:</span>
+    <button class="vis-btn active" id="vis-images" onclick="toggleVis('images')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="2"/><circle cx="5.5" cy="7" r="1.2"/><path d="M1 11l3.5-3 3 3 2.5-2.5 4 4"/></svg>
+      Images
+    </button>
+    <button class="vis-btn active" id="vis-flowchart" onclick="toggleVis('flowchart')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="1" width="6" height="3.5" rx="1"/><rect x="5" y="11.5" width="6" height="3.5" rx="1"/><rect x="1" y="6.5" width="6" height="3" rx="1"/><rect x="9" y="6.5" width="6" height="3" rx="1"/><path d="M8 4.5v2M8 11.5V9.5M7 8H4M9 8h3"/></svg>
+      Flowcharts
+    </button>
+    <button class="vis-btn active" id="vis-conceptmap" onclick="toggleVis('conceptmap')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><circle cx="2.5" cy="3" r="1.5"/><circle cx="13.5" cy="3" r="1.5"/><circle cx="2.5" cy="13" r="1.5"/><circle cx="13.5" cy="13" r="1.5"/><path d="M4 4l2.5 2.5M12 4l-2.5 2.5M4 12l2.5-2.5M12 12l-2.5-2.5"/></svg>
+      Concept maps
+    </button>
+  </div>
+
+  <div id="level-tabs">
+    <button class="level-tab active" id="tab-grade5" onclick="switchLevel('grade5')"><span class="level-dot"></span>5th Grade</button>
+    <button class="level-tab" id="tab-college" onclick="switchLevel('college')"><span class="level-dot"></span>College</button>
+    <button class="level-tab" id="tab-masters" onclick="switchLevel('masters')"><span class="level-dot"></span>Master's</button>
+    <button class="level-tab" id="tab-phd" onclick="switchLevel('phd')"><span class="level-dot"></span>PhD</button>
+  </div>
+
+  <div id="content">
+    <div id="empty">
+      <div class="icon">🔭</div>
+      <p>Type any academic topic above, or pick a subject to browse curated subtopics. Each explanation builds progressively — 5th Grade through PhD.</p>
+    </div>
+    <div id="article">
+      <div id="article-header">
+        <div id="article-breadcrumb"></div>
+        <div id="article-title"></div>
+        <div id="article-meta"></div>
+        <div class="level-progression" id="level-progression"></div>
+      </div>
+      <div id="article-body"></div>
+      <div id="branches"><h3>Explore further</h3><div id="branches-grid"></div></div>
+      <div id="bibliography"><h3>Bibliography</h3><div id="bibliography-list"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUBTOPICS = {
+  "Business & Management":["Supply Chain Management","Porter's Five Forces","Organisational Behaviour","Corporate Finance","Lean Management","Strategic Management","Marketing Mix","Agency Theory","Mergers & Acquisitions","Operations Research","Corporate Governance","Behavioural Economics in Business"],
+  "Economics":["Game Theory","Keynesian Economics","Comparative Advantage","Monetary Policy","Market Failure","Prospect Theory","Solow Growth Model","Asymmetric Information","Trade Theory","Price Elasticity","Austrian School","Public Goods & Externalities"],
+  "Medicine":["Immunology","Pharmacokinetics","Neuroplasticity","Epigenetics","Germ Theory","Homeostasis","Blood-Brain Barrier","Stem Cell Biology","Antibiotic Resistance","mRNA Vaccines","Oncology Basics","The Autonomic Nervous System"],
+  "Science":["Quantum Entanglement","Natural Selection","Thermodynamics","CRISPR","Dark Matter","Plate Tectonics","Photosynthesis","Standard Model","Relativity","Entropy","Electromagnetism","Cellular Respiration"],
+  "Mathematics":["Bayesian Inference","Fourier Transform","Topology","Linear Algebra","Number Theory","Differential Equations","Probability Theory","Graph Theory","Calculus of Variations","Complex Analysis","Set Theory","Chaos Theory"],
+  "History":["Industrial Revolution","Fall of Rome","The Enlightenment","Bretton Woods System","Colonialism & Its Legacy","Cold War Origins","The Black Death","Mongol Empire","French Revolution","Decolonisation","Scientific Revolution","World War I Causes"],
+  "Philosophy":["Epistemology","Utilitarianism","The Mind-Body Problem","Social Contract Theory","Phenomenology","Kantian Ethics","Philosophy of Science","Existentialism","Logic & Fallacies","Free Will","Political Philosophy","Aesthetics"],
+  "Technology":["Neural Networks","Blockchain","Containerisation","Public Key Cryptography","The Internet Protocol","Operating Systems","Relational Databases","Compilers","Distributed Systems","Reinforcement Learning","Quantum Computing","Computer Vision"]
+};
+
+const LEVELS = ["grade5","college","masters","phd"];
+const LEVEL_LABELS = {grade5:"5th Grade",college:"College",masters:"Master's",phd:"PhD"};
+const LEVEL_BUILD = {grade5:"Starting point",college:"Builds on 5th Grade",masters:"Builds on College",phd:"Builds on Master's"};
+
+// Wikimedia image search proxy — uses free Wikimedia API, no key needed
+const WIKI_IMG_API = "https://en.wikipedia.org/w/api.php";
+
+let currentTopic = null;
+let currentBranch = null;
+let currentLevel = "grade5";
+let currentCategory = "general";
+let cache = {}; // topic||branch -> { grade5, college, masters, phd }
+let imageCache = {}; // topic -> [{src, caption}]
+let repoAll = [];
+let visPrefs = { images: true, flowchart: true, conceptmap: true };
+let bgController = null; // AbortController for background fetches
+
+function cacheKey(t,b){ return `${(t||"").toLowerCase()}||${b||""}`; }
+
+// ── Repo ───────────────────────────────────────────────
+async function fetchRepo(){
+  try{ const r=await fetch("/api/repository"); const d=await r.json(); repoAll=d.topics||[]; renderRepo(repoAll); }catch(e){}
+}
+function renderRepo(items){
+  const el=document.getElementById("repo-list");
+  if(!items.length){el.innerHTML='<div class="repo-empty">No topics yet. Start exploring!</div>';return;}
+  el.innerHTML=items.map(t=>`<div class="repo-item${currentTopic===t.topic?' active':''}" onclick="loadTopic('${esc(t.topic)}','${esc(t.category)}')"><span class="repo-label">${esc(t.topic)}</span><span class="repo-count">×${t.visits}</span></div>`).join("");
+}
+function filterRepo(q){ renderRepo(q?repoAll.filter(t=>t.topic.toLowerCase().includes(q.toLowerCase())):repoAll); }
+
+// ── Subjects ───────────────────────────────────────────
+function selectSubject(name){
+  document.querySelectorAll(".subject-btn").forEach(b=>b.classList.toggle("active",b.textContent===name));
+  currentCategory=name;
+  const panel=document.getElementById("subtopics-panel");
+  const grid=document.getElementById("subtopics-grid");
+  const chips=SUBTOPICS[name]||[];
+  if(chips.length){ grid.innerHTML=chips.map(s=>`<div class="subtopic-chip" onclick="loadTopic('${esc(s)}','${esc(name)}')">${esc(s)}</div>`).join(""); panel.classList.add("visible"); }
+  else panel.classList.remove("visible");
+}
+function loadTopic(topic,category){ document.getElementById("topic-input").value=topic; currentCategory=category||"general"; explore(); }
+
+// ── Visual toggles ────────────────────────────────────
+function toggleVis(type){
+  visPrefs[type]=!visPrefs[type];
+  document.getElementById("vis-"+type).classList.toggle("active",visPrefs[type]);
+  if(currentTopic){ renderLevel(currentLevel); }
+}
+
+// ── Wikipedia image fetch ─────────────────────────────
+async function fetchImages(topic){
+  if(imageCache[topic]) return imageCache[topic];
+  try {
+    // Search for relevant Wikipedia page
+    const searchUrl=`${WIKI_IMG_API}?action=query&list=search&srsearch=${encodeURIComponent(topic)}&srlimit=1&format=json&origin=*`;
+    const sr=await fetch(searchUrl); const sd=await sr.json();
+    const pages=sd.query?.search;
+    if(!pages||!pages.length){ imageCache[topic]=[]; return []; }
+    const pageTitle=pages[0].title;
+    // Get images from that page
+    const imgUrl=`${WIKI_IMG_API}?action=query&titles=${encodeURIComponent(pageTitle)}&prop=images&imlimit=8&format=json&origin=*`;
+    const ir=await fetch(imgUrl); const id=await ir.json();
+    const pageData=Object.values(id.query?.pages||{})[0];
+    const imgTitles=(pageData?.images||[]).filter(i=>/\.(jpg|jpeg|png|gif|svg)$/i.test(i.title)&&!/icon|logo|flag|map|symbol|seal|coat|signature|arrow|button|blank|template/i.test(i.title)).slice(0,4);
+    if(!imgTitles.length){ imageCache[topic]=[]; return []; }
+    // Get actual image URLs
+    const titles=imgTitles.map(i=>i.title).join("|");
+    const infoUrl=`${WIKI_IMG_API}?action=query&titles=${encodeURIComponent(titles)}&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=400&format=json&origin=*`;
+    const inr=await fetch(infoUrl); const ind=await inr.json();
+    const imgs=Object.values(ind.query?.pages||{}).map(p=>{
+      const info=p.imageinfo?.[0];
+      if(!info||!info.url) return null;
+      const caption=info.extmetadata?.ImageDescription?.value?.replace(/<[^>]*>/g,"")||p.title?.replace("File:","").replace(/\.[a-z]+$/i,"");
+      return { src: info.thumburl||info.url, caption: caption?.slice(0,80)||"" };
+    }).filter(Boolean).slice(0,3);
+    imageCache[topic]=imgs;
+    return imgs;
+  } catch(e){ imageCache[topic]=[]; return []; }
+}
+
+// ── Main explore flow ─────────────────────────────────
+async function explore(){
+  const raw=document.getElementById("topic-input").value.trim();
+  if(!raw||raw.length<2) return;
+  await doExplore(raw, null);
+}
+
+async function doExplore(topic, branch){
+  // Cancel any running background fetches for previous topic
+  if(bgController) bgController.abort();
+  bgController=new AbortController();
+
+  const key=cacheKey(topic,branch);
+  currentTopic=topic; currentBranch=branch; currentLevel="grade5";
+
+  // Reset tabs
+  LEVELS.forEach(l=>{
+    const t=document.getElementById("tab-"+l);
+    t.classList.remove("loaded","loading-now","active");
+    t.querySelector(".tab-spinner")?.remove();
+  });
+  document.getElementById("tab-grade5").classList.add("active");
+
+  document.getElementById("explore-btn").disabled=true;
+  document.getElementById("visual-bar").classList.remove("visible");
+  showArticle(false);
+  showEmpty(false);
+  showSkeleton(true);
+  renderRepo(repoAll);
+
+  // Kick off image fetch in parallel (non-blocking)
+  fetchImages(branch||topic).then(()=>{
+    if(currentTopic===topic && currentBranch===branch && visPrefs.images) injectImages(currentLevel);
+  });
+
+  // --- Fetch grade5 first, show immediately ---
+  const already=cache[key];
+  if(already?.grade5){
+    showSkeleton(false);
+    renderLevel("grade5");
+    showArticle(true);
+    document.getElementById("tab-grade5").classList.add("loaded");
+    document.getElementById("visual-bar").classList.add("visible");
+  } else {
+    try {
+      const data=await fetchOneLevel(topic,branch,"grade5",null);
+      if(!cache[key]) cache[key]={};
+      cache[key].grade5=data;
+      showSkeleton(false);
+      renderLevel("grade5");
+      showArticle(true);
+      document.getElementById("tab-grade5").classList.add("loaded");
+      document.getElementById("visual-bar").classList.add("visible");
+      fetchRepo();
+    } catch(e){
+      showSkeleton(false); showEmpty(true);
+      document.getElementById("empty").innerHTML=`<div class="icon">⚠️</div><p>${esc(e.message||"Failed to load. Check API key.")}</p>`;
+      document.getElementById("explore-btn").disabled=false;
+      return;
+    }
+  }
+  document.getElementById("explore-btn").disabled=false;
+
+  // --- Fetch remaining levels in background sequentially ---
+  const remaining=LEVELS.slice(1).filter(l=>!cache[key]?.[l]);
+  if(remaining.length>0){
+    (async()=>{
+      for(let i=0;i<remaining.length;i++){
+        const lvl=remaining[i];
+        const prevLvl=LEVELS[LEVELS.indexOf(lvl)-1];
+        const prevContent=cache[key]?.[prevLvl]?.content||null;
+        const tab=document.getElementById("tab-"+lvl);
+        tab.classList.add("loading-now");
+        // Add tiny spinner to tab
+        if(!tab.querySelector(".tab-spinner")){
+          const sp=document.createElement("span"); sp.className="tab-spinner"; tab.appendChild(sp);
+        }
+        try {
+          if(bgController.signal.aborted) break;
+          const data=await fetchOneLevel(topic,branch,lvl,prevContent,bgController.signal);
+          if(bgController.signal.aborted) break;
+          if(!cache[key]) cache[key]={};
+          cache[key][lvl]=data;
+          tab.classList.remove("loading-now");
+          tab.querySelector(".tab-spinner")?.remove();
+          tab.classList.add("loaded");
+          // If user switched to this level while it was loading, render it now
+          if(currentLevel===lvl && currentTopic===topic && currentBranch===branch){
+            renderLevel(lvl);
+          }
+        } catch(e){
+          if(e.name==="AbortError") break;
+          tab.classList.remove("loading-now");
+          tab.querySelector(".tab-spinner")?.remove();
+        }
+      }
+    })();
+  }
+}
+
+async function fetchOneLevel(topic,branch,level,prevContent,signal){
+  const body={topic,branch,category:currentCategory,level,prevContent:prevContent?prevContent.slice(0,1400):null};
+  const opts={method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)};
+  if(signal) opts.signal=signal;
+  const r=await fetch("/api/explore",opts);
+  const d=await r.json();
+  if(d.error) throw new Error(d.error);
+  return d.levels[level];
+}
+
+// ── Level switching ───────────────────────────────────
+function switchLevel(lvl){
+  if(!currentTopic) return;
+  const key=cacheKey(currentTopic,currentBranch);
+  currentLevel=lvl;
+  LEVELS.forEach(l=>document.getElementById("tab-"+l).classList.toggle("active",l===lvl));
+
+  if(cache[key]?.[lvl]){
+    renderLevel(lvl);
+    document.getElementById("content").scrollTop=0;
+  } else {
+    // Still loading — show skeleton
+    showArticle(false);
+    showSkeleton(true);
+    // Check periodically
+    const interval=setInterval(()=>{
+      if(cache[key]?.[lvl]){
+        clearInterval(interval);
+        showSkeleton(false);
+        renderLevel(lvl);
+        showArticle(true);
+        document.getElementById("content").scrollTop=0;
+      }
+    },400);
+  }
+}
+
+// ── Render ─────────────────────────────────────────────
+function renderLevel(lvl){
+  const key=cacheKey(currentTopic,currentBranch);
+  const data=cache[key]?.[lvl];
+  if(!data) return;
+
+  // Header
+  const bc=document.getElementById("article-breadcrumb");
+  bc.innerHTML=currentBranch?`<span>${esc(currentTopic)}</span> → ${esc(currentBranch)}`:"";
+  document.getElementById("article-title").textContent=currentBranch||currentTopic;
+  document.getElementById("article-meta").textContent=LEVEL_BUILD[lvl];
+
+  // Progression
+  const prog=document.getElementById("level-progression");
+  prog.innerHTML=LEVELS.map((l,i)=>{
+    const cls=l===lvl?"current":LEVELS.indexOf(lvl)>i?"done":"future";
+    return `${i>0?'<span class="prog-arrow">→</span>':''}<span class="prog-step ${cls}">${LEVEL_LABELS[l]}</span>`;
+  }).join("");
+
+  // Parse sections
+  const sections=parseSections(data.content);
+  const body=document.getElementById("article-body");
+  const imgs=imageCache[currentBranch||currentTopic]||[];
+
+  // Build HTML
+  let html="";
+
+  // Inject images after first section if available
+  sections.forEach((s,idx)=>{
+    html+=`<div class="section-block">
+      <div class="section-header">
+        <div class="section-title">${esc(s.heading)}</div>
+        <button class="deeper-btn" onclick="goDeeper('${esc(s.heading)}')">↓ Go deeper</button>
+      </div>
+      ${s.paragraphs.map(p=>`<p>${addCitations(p)}</p>`).join("")}
+    </div>`;
+
+    // After first section: images
+    if(idx===0 && visPrefs.images && imgs.length){
+      html+=buildImageStrip(imgs);
+    }
+    // After second section: flowchart if data has one
+    if(idx===1 && visPrefs.flowchart && data.flowchart){
+      html+=buildFlowchart(data.flowchart, data.flowchartTitle||"Process overview");
+    }
+    // After third section: concept map
+    if(idx===2 && visPrefs.conceptmap && data.conceptMap){
+      html+=buildConceptMap(data.conceptMap, data.conceptMapTitle||"Concept map");
+    }
+  });
+
+  body.innerHTML=html;
+
+  // Branches
+  const bg=document.getElementById("branches-grid");
+  bg.innerHTML=(data.branches||[]).map(b=>`<button class="branch-btn" onclick="doExplore('${esc(currentTopic)}','${esc(b)}')">${esc(b)} ↗</button>`).join("");
+  document.getElementById("branches").style.display=data.branches?.length?"block":"none";
+
+  // Bibliography
+  const bib=data.bibliography||[];
+  const bl=document.getElementById("bibliography-list");
+  if(bib.length){
+    bl.innerHTML=bib.map(c=>`<div class="citation-item"><span class="citation-num">[${esc(c.ref)}]</span><span class="citation-text">${esc(c.authors)} (${esc(c.year)}). <em>${esc(c.title)}</em>. ${esc(c.source)}.</span></div>`).join("");
+    document.getElementById("bibliography").style.display="block";
+  } else document.getElementById("bibliography").style.display="none";
+
+  showArticle(true);
+  if(window.MathJax?.typesetPromise) window.MathJax.typesetPromise([body]).catch(()=>{});
+}
+
+function injectImages(lvl){
+  // Re-render with images now available
+  if(currentTopic) renderLevel(lvl);
+}
+
+function buildImageStrip(imgs){
+  if(!imgs.length) return "";
+  return `<div class="image-strip">${imgs.map(img=>`
+    <div class="img-card">
+      <img src="${esc(img.src)}" alt="${esc(img.caption)}" loading="lazy" onerror="this.parentElement.style.display='none'"/>
+      <div class="img-caption">${esc(img.caption)}</div>
+    </div>`).join("")}</div>`;
+}
+
+function buildFlowchart(nodes, title){
+  // nodes: [{id,label,next:[ids],shape?}]
+  if(!nodes||!nodes.length) return "";
+  const W=560, PW=160, PH=44, GAP=60, PAD=20;
+  // Simple linear layout
+  const total=nodes.length;
+  const svgH=total*(PH+GAP)+PAD*2;
+  const cx=W/2;
+  let svg=`<svg width="${W}" height="${svgH}" viewBox="0 0 ${W} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="font-family:inherit">`;
+  // Arrow marker
+  svg+=`<defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#9a9890" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>`;
+  nodes.forEach((n,i)=>{
+    const x=cx-PW/2, y=PAD+i*(PH+GAP);
+    const isFirst=i===0, isLast=i===nodes.length-1;
+    const fill=isFirst?"#E1F5EE":isLast?"#EEEDFE":"#f7f6f3";
+    const stroke=isFirst?"#1D9E75":isLast?"#534AB7":"rgba(0,0,0,0.15)";
+    const tc=isFirst?"#0a5a40":isLast?"#3C3489":"#1a1a18";
+    svg+=`<rect x="${x}" y="${y}" width="${PW}" height="${PH}" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/>`;
+    // Wrap label
+    const words=n.label.split(" "); let line=""; const lines=[];
+    words.forEach(w=>{ if((line+" "+w).trim().length>20&&line){ lines.push(line); line=w; } else line=(line+" "+w).trim(); });
+    if(line) lines.push(line);
+    const lh=16; const startY=y+PH/2-(lines.length-1)*lh/2;
+    lines.forEach((ln,li)=>svg+=`<text x="${cx}" y="${startY+li*lh}" text-anchor="middle" dominant-baseline="central" font-size="12" fill="${tc}" font-weight="${isFirst||isLast?'600':'400'}">${esc(ln)}</text>`);
+    // Arrow to next
+    if(i<nodes.length-1){
+      const ay=y+PH, by=y+PH+GAP;
+      svg+=`<line x1="${cx}" y1="${ay}" x2="${cx}" y2="${by-6}" stroke="#9a9890" stroke-width="1" marker-end="url(#arr)"/>`;
+    }
+  });
+  svg+="</svg>";
+  return `<div class="flowchart-wrap"><div class="flowchart-header"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="1" width="6" height="3.5" rx="1"/><rect x="5" y="11.5" width="6" height="3.5" rx="1"/><path d="M8 4.5v7"/></svg>${esc(title)}</div><div class="flowchart-body">${svg}</div></div>`;
+}
+
+function buildConceptMap(nodes, title){
+  // nodes: [{label, related:[labels]}] — render as hub-and-spoke
+  if(!nodes||!nodes.length) return "";
+  const W=520, H=320, cx=W/2, cy=H/2, r=110;
+  const hub=nodes[0];
+  const spokes=nodes.slice(1,7); // max 6 spokes
+  const n=spokes.length;
+  let svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="font-family:inherit">`;
+  // Hub
+  svg+=`<ellipse cx="${cx}" cy="${cy}" rx="72" ry="32" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1"/>`;
+  svg+=`<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#0a5a40">${esc(hub.label.slice(0,22))}</text>`;
+  spokes.forEach((s,i)=>{
+    const angle=(2*Math.PI*i/n)-Math.PI/2;
+    const sx=cx+r*Math.cos(angle), sy=cy+r*Math.sin(angle);
+    svg+=`<line x1="${cx}" y1="${cy}" x2="${sx}" y2="${sy}" stroke="#d0cec8" stroke-width="1" stroke-dasharray="3 2"/>`;
+    svg+=`<ellipse cx="${sx}" cy="${sy}" rx="58" ry="24" fill="#f7f6f3" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`;
+    const label=s.label.slice(0,18);
+    svg+=`<text x="${sx}" y="${sy}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#1a1a18">${esc(label)}</text>`;
+  });
+  svg+="</svg>";
+  return `<div class="concept-map-wrap"><div class="concept-map-header">${esc(title)}</div><div class="concept-map-body">${svg}</div></div>`;
+}
+
+function parseSections(text){
+  const parts=text.split(/\[HEADING:\s*(.*?)\]/);
+  const sections=[];
+  for(let i=1;i<parts.length;i+=2){
+    const heading=parts[i].trim();
+    const content=(parts[i+1]||"").trim();
+    const paragraphs=content.split(/\n\n+/).filter(p=>p.trim().length>0);
+    if(heading) sections.push({heading,paragraphs});
+  }
+  if(!sections.length){
+    const paragraphs=text.split(/\n\n+/).filter(p=>p.trim().length>0);
+    sections.push({heading:currentBranch||currentTopic||"Overview",paragraphs});
+  }
+  return sections;
+}
+
+function addCitations(text){
+  return text.replace(/\[(\d+)\]/g,'<sup style="color:var(--accent);font-size:11px;font-weight:600;">[$1]</sup>');
+}
+
+function goDeeper(sectionHeading){
+  const idx=LEVELS.indexOf(currentLevel);
+  if(idx<LEVELS.length-1){
+    const next=LEVELS[idx+1];
+    currentLevel=next;
+    LEVELS.forEach(l=>document.getElementById("tab-"+l).classList.toggle("active",l===next));
+    const key=cacheKey(currentTopic,currentBranch);
+    if(cache[key]?.[next]){ renderLevel(next); document.getElementById("content").scrollTop=0; }
+    else { showArticle(false); showSkeleton(true); const iv=setInterval(()=>{ if(cache[key]?.[next]){ clearInterval(iv); showSkeleton(false); renderLevel(next); showArticle(true); document.getElementById("content").scrollTop=0; } },400); }
+  } else {
+    doExplore(currentTopic, sectionHeading);
+  }
+}
+
+// ── Skeleton ──────────────────────────────────────────
+function showSkeleton(v){
+  let sk=document.getElementById("skeleton");
+  if(v){
+    if(!sk){
+      sk=document.createElement("div"); sk.id="skeleton"; sk.style.padding="0";
+      sk.innerHTML=`<div class="skeleton skel-title"></div><div class="skeleton skel-meta"></div><div style="margin-top:28px"><div class="skeleton skel-heading"></div><div class="skeleton skel-p w90"></div><div class="skeleton skel-p w85"></div><div class="skeleton skel-p w75"></div><div class="skeleton skel-p w90"></div></div><div style="margin-top:28px"><div class="skeleton skel-heading"></div><div class="skeleton skel-p w85"></div><div class="skeleton skel-p w90"></div><div class="skeleton skel-p w75"></div></div>`;
+      document.getElementById("content").prepend(sk);
+    }
+    sk.style.display="block";
+  } else if(sk) sk.style.display="none";
+}
+function showArticle(v){ document.getElementById("article").style.display=v?"block":"none"; }
+function showEmpty(v){ document.getElementById("empty").style.display=v?"flex":"none"; }
+function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+
+fetchRepo();
+</script>
+</body>
+</html>
