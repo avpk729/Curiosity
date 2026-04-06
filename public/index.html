@@ -15,24 +15,20 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 #sidebar-header{padding:16px 14px 10px;border-bottom:0.5px solid var(--border2);}
 #sidebar-header h1{font-size:14px;font-weight:600;color:var(--text);}
 #sidebar-header p{font-size:11px;color:var(--text3);margin-top:2px;}
-
 #search-box-wrap{padding:10px 12px;border-bottom:0.5px solid var(--border);position:relative;}
 #tree-search{width:100%;padding:8px 32px 8px 10px;font-size:13px;border:0.5px solid var(--border2);border-radius:8px;background:var(--bg2);color:var(--text);outline:none;}
 #tree-search:focus{border-color:var(--accent);}
-#search-go-btn{position:absolute;right:18px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:4px;display:flex;align-items:center;}
+#search-go-btn{position:absolute;right:18px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:4px;}
 #search-go-btn:hover{color:var(--accent);}
 #search-hint{font-size:11px;color:var(--text3);padding:4px 2px 0;display:none;}
 #search-hint.visible{display:block;}
-
-/* Level pills inside sidebar */
 #tree-level-bar{display:flex;gap:4px;padding:8px 12px;border-bottom:0.5px solid var(--border);flex-wrap:wrap;}
 .tree-lvl-btn{padding:3px 10px;font-size:11px;font-weight:500;border-radius:99px;border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;transition:all 0.12s;}
 .tree-lvl-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
 .tree-lvl-btn:not(.active):hover{background:var(--bg2);color:var(--text2);}
-
-#tree-wrap{flex:1;overflow-y:auto;padding:6px 6px 20px;}
-.tree-loading{font-size:11px;color:var(--text3);text-align:center;padding:16px;display:none;}
+.tree-loading{font-size:11px;color:var(--text3);text-align:center;padding:10px;display:none;}
 .tree-loading.visible{display:block;}
+#tree-wrap{flex:1;overflow-y:auto;padding:6px 6px 20px;}
 
 .tree-subject{margin-bottom:2px;}
 .tree-subject-hd{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;cursor:pointer;transition:background 0.12s;user-select:none;}
@@ -44,7 +40,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .tree-subj-count{font-size:10px;color:var(--text3);background:var(--bg3);border-radius:99px;padding:1px 6px;flex-shrink:0;}
 .tree-subject-body{display:none;padding-left:16px;margin-bottom:4px;}
 .tree-subject-body.open{display:block;}
-
 .tree-topic-hd{display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:7px;cursor:pointer;transition:background 0.12s;}
 .tree-topic-hd:hover{background:var(--bg2);}
 .tree-topic-hd.active{background:var(--accent-bg);}
@@ -54,7 +49,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .tree-topic-label{font-size:12px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.4;}
 .tree-topic-hd.active .tree-topic-label{color:var(--accent-text);font-weight:500;}
 .tree-topic-visits{font-size:10px;color:var(--text3);flex-shrink:0;}
-
 .tree-topic-body{display:none;padding-left:13px;}
 .tree-topic-body.open{display:block;}
 .tree-branch{display:flex;align-items:center;gap:5px;padding:3px 8px;border-radius:6px;cursor:pointer;font-size:11px;color:var(--text2);transition:background 0.12s;line-height:1.4;}
@@ -65,9 +59,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .tree-branch.explored::before{content:"◉";color:#63C4A0;}
 .tree-sec-label{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:0.07em;text-transform:uppercase;padding:5px 8px 2px;}
 
-/* Level tree refresh indicator */
-.tree-refresh-badge{font-size:9px;color:var(--text3);padding:2px 6px;background:var(--bg3);border-radius:99px;margin-left:auto;flex-shrink:0;}
-
 #main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
 #topbar{padding:14px 26px 0;}
 #visual-bar{display:none;padding:0 0 12px;align-items:center;gap:8px;}
@@ -76,7 +67,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .vis-btn{padding:4px 12px;font-size:12px;font-weight:500;border-radius:99px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all 0.12s;}
 .vis-btn:hover{background:var(--bg2);}
 .vis-btn.active{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent);}
-
 #level-tabs{display:flex;border-bottom:0.5px solid var(--border2);padding:0 26px;}
 .level-tab{padding:10px 18px;font-size:13px;font-weight:500;color:var(--text3);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.12s;margin-bottom:-0.5px;display:flex;align-items:center;gap:7px;}
 .level-tab:hover{color:var(--text2);}
@@ -88,17 +78,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
 .tab-spinner{display:inline-block;width:10px;height:10px;border:1.5px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;margin-left:4px;vertical-align:middle;}
 @keyframes spin{to{transform:rotate(360deg);}}
-
-#content{flex:1;overflow-y:auto;padding:24px 26px 80px;max-width:820px;}
-
-.skeleton{background:var(--bg2);border-radius:6px;animation:shimmer 1.4s ease-in-out infinite;}
-@keyframes shimmer{0%,100%{opacity:0.5;}50%{opacity:1;}}
 @keyframes rotateRing{to{transform:rotate(360deg);}}
 
+#content{flex:1;overflow-y:auto;padding:24px 26px 80px;max-width:820px;}
+.skeleton{background:var(--bg2);border-radius:6px;animation:shimmer 1.4s ease-in-out infinite;}
+@keyframes shimmer{0%,100%{opacity:0.5;}50%{opacity:1;}}
 #empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:12px;color:var(--text3);}
 #empty .icon{font-size:40px;}
 #empty p{font-size:14px;text-align:center;max-width:360px;line-height:1.7;}
-
 #article{display:none;}
 #article.visible{display:block;}
 #article-header{margin-bottom:24px;}
@@ -111,26 +98,20 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:0.5px solid var(--border);gap:8px;}
 .sec-title{font-size:15px;font-weight:600;color:var(--text);letter-spacing:-0.01em;flex:1;}
 .sec-nav-btns{display:flex;gap:6px;flex-shrink:0;}
-.deeper-btn,.higher-btn{display:flex;align-items:center;gap:4px;padding:4px 11px;font-size:11px;font-weight:500;border-radius:99px;border:0.5px solid var(--border2);background:transparent;cursor:pointer;white-space:nowrap;transition:all 0.12s;}
-.deeper-btn{color:var(--text3);}
+.deeper-btn,.higher-btn{display:flex;align-items:center;gap:4px;padding:4px 11px;font-size:11px;font-weight:500;border-radius:99px;border:0.5px solid var(--border2);background:transparent;cursor:pointer;white-space:nowrap;transition:all 0.12s;color:var(--text3);}
 .deeper-btn:hover{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent);}
-.higher-btn{color:var(--text3);}
-.higher-btn:hover{background:var(--bg2);color:var(--text2);border-color:var(--border2);}
-
-/* Inline prereq and deeper chips */
-.prereq-chip{display:inline-flex;align-items:center;gap:3px;background:var(--bg2);border:0.5px solid var(--border2);border-radius:4px;padding:1px 7px;font-size:12px;color:var(--text2);cursor:pointer;transition:all 0.12s;vertical-align:baseline;margin:0 1px;text-decoration:none;}
-.prereq-chip:hover{background:var(--bg3);border-color:var(--border2);color:var(--text);}
-.prereq-chip .chip-icon{font-size:10px;opacity:0.7;}
-.deeper-chip{display:inline-flex;align-items:center;gap:3px;background:var(--accent-bg);border:0.5px solid rgba(29,158,117,0.3);border-radius:4px;padding:1px 7px;font-size:12px;color:var(--accent-text);cursor:pointer;transition:all 0.12s;vertical-align:baseline;margin:0 1px;}
-.deeper-chip:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
-.deeper-chip .chip-icon{font-size:10px;}
+.higher-btn:hover{background:var(--bg2);color:var(--text2);}
 .sec-block p{font-size:15.5px;line-height:1.82;color:var(--text);margin-bottom:16px;}
 .sec-block p:last-child{margin-bottom:0;}
 
-/* Formula display block */
 .formula-card{margin:16px 0;background:var(--bg2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:12px 18px;overflow-x:auto;}
 .formula-card-label{font-size:10px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;}
 .formula-card-body{font-size:15px;color:var(--text);line-height:1.8;}
+
+.prereq-chip{display:inline-flex;align-items:center;gap:3px;background:var(--bg2);border:0.5px solid var(--border2);border-radius:4px;padding:1px 7px;font-size:12px;color:var(--text2);cursor:pointer;transition:all 0.12s;vertical-align:baseline;margin:0 1px;}
+.prereq-chip:hover{background:var(--bg3);color:var(--text);}
+.deeper-chip{display:inline-flex;align-items:center;gap:3px;background:var(--accent-bg);border:0.5px solid rgba(29,158,117,0.3);border-radius:4px;padding:1px 7px;font-size:12px;color:var(--accent-text);cursor:pointer;transition:all 0.12s;vertical-align:baseline;margin:0 1px;}
+.deeper-chip:hover{background:var(--accent);color:#fff;}
 
 .image-strip{display:flex;gap:10px;margin:16px 0;flex-wrap:wrap;}
 .img-card{border-radius:8px;overflow:hidden;border:0.5px solid var(--border);background:var(--bg2);flex:1;min-width:160px;max-width:260px;}
@@ -149,7 +130,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 #branches-grid{display:flex;flex-wrap:wrap;gap:8px;}
 .branch-btn{padding:7px 15px;font-size:13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;transition:all 0.12s;}
 .branch-btn:hover{background:var(--bg2);border-color:var(--accent);color:var(--accent);}
-
 #bibliography{margin-top:28px;padding-top:20px;border-top:0.5px solid var(--border);display:none;}
 #bibliography h3{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:14px;}
 .cit-item{display:flex;gap:10px;margin-bottom:10px;font-size:13px;color:var(--text2);line-height:1.65;}
@@ -158,7 +138,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 </style>
 </head>
 <body>
-
 <div id="sidebar">
   <div id="sidebar-header">
     <h1>Curiosity Wikipedia</h1>
@@ -166,7 +145,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   </div>
   <div id="search-box-wrap">
     <input id="tree-search" placeholder="Search or explore a topic..." onkeydown="handleSearchKey(event)" oninput="handleSearchInput(this.value)">
-    <button id="search-go-btn" onclick="triggerSearch()" title="Explore">&#x2192;</button>
+    <button id="search-go-btn" onclick="triggerSearch()">&#x2192;</button>
     <div id="search-hint"></div>
   </div>
   <div id="tree-level-bar">
@@ -195,10 +174,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <button class="level-tab" id="tab-phd" onclick="switchLevel('phd')"><span class="lvl-dot"></span>PhD</button>
   </div>
   <div id="content">
-    <div id="empty">
-      <div class="icon">🔭</div>
-      <p>Select any topic from the knowledge tree on the left, or search for any academic concept. The tree updates as you explore deeper.</p>
-    </div>
+    <div id="empty"><div class="icon">🔭</div><p>Select any topic from the knowledge tree on the left, or search for any academic concept. The tree updates as you explore deeper.</p></div>
     <div id="article">
       <div id="article-header">
         <div id="article-bc"></div>
@@ -213,7 +189,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 </div>
 
 <script>
-const BASE_TOPICS={
+// ── Constants (defined first, used everywhere) ────────
+const BASE_TOPICS = {
   "Business & Economics":["Microeconomics","Macroeconomics","Financial Accounting","Management Accounting","Corporate Finance","Business Statistics","Organisational Behaviour","Strategic Management","Marketing Management","International Business","Supply Chain Management","Entrepreneurship","Business Law","Human Resource Management","Operations Management","Behavioural Economics","Investment Analysis","Business Ethics"],
   "Arts, Law & Education":["Constitutional Law","Contract Law","Criminal Law","Tort Law","International Law","Curriculum Design","Educational Psychology","Sociology","Political Science","International Relations","Criminology","Social Work","Philosophy","History","English Literature","Media & Communications","Gender Studies","Indigenous Studies","Fine Arts & Design","Music Theory"],
   "Health & Medicine":["Human Anatomy","Physiology","Biochemistry","Pathology","Pharmacology","Immunology","Microbiology","Clinical Medicine","Medical Ethics","Epidemiology","Nursing Practice","Mental Health Nursing","Paramedic Science","Public Health","Health Policy","Pharmacy Practice","Neuropsychology","Dementia & Ageing","Nutrition & Dietetics","Occupational Therapy"],
@@ -229,21 +206,22 @@ const BASE_TOPICS={
   "IELTS & Academic English":["Academic Reading Skills","Academic Writing Task 1","Academic Writing Task 2","IELTS Listening","IELTS Speaking","Grammar for Academic Writing","Vocabulary Building","Critical Thinking in English","Referencing & Citation","Paraphrasing & Summarising","Research Paper Writing","Presentation Skills"]
 };
 
-const SUBJECT_ICONS={"Business & Economics":"📊","Arts, Law & Education":"⚖️","Health & Medicine":"🩺","Sciences & Engineering":"🔬","Maritime & Logistics":"🚢","Marine & Antarctic Studies":"🧊","Information & Computing":"💻","Research & Methods":"📐","CPA Australia":"🧾","AMSA & STCW Certification":"⚓","Project Management (PMP)":"📋","GMAT & Graduate Admissions":"🎓","IELTS & Academic English":"📝","general":"🔭"};
-const ALL_SUBJECTS=["Business & Economics","Arts, Law & Education","Health & Medicine","Sciences & Engineering","Maritime & Logistics","Marine & Antarctic Studies","Information & Computing","Research & Methods","CPA Australia","AMSA & STCW Certification","Project Management (PMP)","GMAT & Graduate Admissions","IELTS & Academic English"];
-const LEVELS=["grade5","college","masters","phd"];
-const LEVEL_LABELS={grade5:"5th Grade",college:"College",masters:"Master's",phd:"PhD"};
-const LEVEL_BUILD={grade5:"Starting point",college:"Builds on 5th Grade",masters:"Builds on College",phd:"Builds on Master's"};
-const WIKI_API="https://en.wikipedia.org/w/api.php";
+const SUBJECT_ICONS = {"Business & Economics":"📊","Arts, Law & Education":"⚖️","Health & Medicine":"🩺","Sciences & Engineering":"🔬","Maritime & Logistics":"🚢","Marine & Antarctic Studies":"🧊","Information & Computing":"💻","Research & Methods":"📐","CPA Australia":"🧾","AMSA & STCW Certification":"⚓","Project Management (PMP)":"📋","GMAT & Graduate Admissions":"🎓","IELTS & Academic English":"📝","general":"🔭"};
+const ALL_SUBJECTS = Object.keys(BASE_TOPICS);
+const LEVELS = ["grade5","college","masters","phd"];
+const LEVEL_LABELS = {grade5:"5th Grade",college:"College",masters:"Master's",phd:"PhD"};
+const LEVEL_BUILD = {grade5:"Starting point",college:"Builds on 5th Grade",masters:"Builds on College",phd:"Builds on Master's"};
+const WIKI_API = "https://en.wikipedia.org/w/api.php";
 
-let currentTopic=null,currentBranch=null,currentLevel="grade5",currentCategory="general";
-let treeLevel="grade5"; // independent tree level
-let cache={},imageCache={},treeData=[],treeTopics={},visPrefs={images:true,flowchart:true,conceptmap:true};
-let bgCtrl=null,treeExpanded={},topicExpanded={};
-let pendingSectionScroll=null; // section heading to scroll to after render
+// ── State ─────────────────────────────────────────────
+let currentTopic=null, currentBranch=null, currentLevel="grade5", currentCategory="general";
+let treeLevel="grade5";
+let cache={}, imageCache={}, treeData=[], treeTopics={}, visPrefs={images:true,flowchart:true,conceptmap:true};
+let bgCtrl=null, treeExpanded={}, topicExpanded={}, pendingSectionScroll=null;
 
 try{treeExpanded=JSON.parse(sessionStorage.getItem("treeExp")||"{}");}catch(e){}
 try{topicExpanded=JSON.parse(sessionStorage.getItem("topicExp")||"{}");}catch(e){}
+
 function saveTreeState(){
   try{sessionStorage.setItem("treeExp",JSON.stringify(treeExpanded));}catch(e){}
   try{sessionStorage.setItem("topicExp",JSON.stringify(topicExpanded));}catch(e){}
@@ -251,7 +229,12 @@ function saveTreeState(){
 function cacheKey(t,b){return((t||"").toLowerCase())+"||"+(b||"");}
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
 
-// ── Tree level selector ───────────────────────────────
+// ── Analytics ─────────────────────────────────────────
+function trackView(topic, level, category, action){
+  fetch("/api/analytics/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic,level,category,action:action||"view"})}).catch(()=>{});
+}
+
+// ── Tree level ────────────────────────────────────────
 function setTreeLevel(lvl){
   treeLevel=lvl;
   document.querySelectorAll(".tree-lvl-btn").forEach(b=>b.classList.toggle("active",b.dataset.lvl===lvl));
@@ -261,13 +244,12 @@ function setTreeLevel(lvl){
 async function loadTreeTopics(lvl){
   document.getElementById("tree-loading").classList.add("visible");
   try{
-    const r=await fetch("/api/tree?level="+lvl);
-    const d=await r.json();
-    treeTopics=d.tree||{};
-    // If server returned empty tree, fall back to hardcoded base topics
-    const hasData=Object.values(treeTopics).some(t=>t&&t.length>0);
-    if(!hasData) treeTopics=BASE_TOPICS;
-  }catch(e){ treeTopics=BASE_TOPICS; }
+    const r = await fetch("/api/tree?level="+lvl);
+    const d = await r.json();
+    treeTopics = d.tree || {};
+    const hasData = Object.values(treeTopics).some(t=>t&&t.length>0);
+    if(!hasData) treeTopics = BASE_TOPICS;
+  } catch(e){ treeTopics = BASE_TOPICS; }
   document.getElementById("tree-loading").classList.remove("visible");
   renderTree();
 }
@@ -275,34 +257,29 @@ async function loadTreeTopics(lvl){
 // ── Repository ────────────────────────────────────────
 async function fetchRepo(){
   try{
-    const r=await fetch("/api/repository");
-    const d=await r.json();
-    treeData=d.topics||[];
+    const r = await fetch("/api/repository");
+    const d = await r.json();
+    treeData = d.topics || [];
     renderTree();
   }catch(e){}
 }
 
-// ── Tree rendering ─────────────────────────────────────
+// ── Tree render ───────────────────────────────────────
 function renderTree(){
-  const wrap=document.getElementById("tree-wrap");
-  if(!wrap)return;
+  const wrap = document.getElementById("tree-wrap");
+  if(!wrap) return;
+  const visitedMap = {};
+  treeData.forEach(t=>{ visitedMap[t.topic.toLowerCase()] = {visits:t.visits,topic:t.topic,category:t.category,branches:t.branches||[]}; });
 
-  // Build visited map: topicLower -> {visits, branches}
-  const visitedMap={};
-  treeData.forEach(t=>{visitedMap[t.topic.toLowerCase()]={visits:t.visits,topic:t.topic,category:t.category,branches:t.branches||[]};});
-
-  let html="";
+  let html = "";
   ALL_SUBJECTS.forEach(subj=>{
-    const icon=SUBJECT_ICONS[subj]||"📚";
-    const isActiveSubj=treeData.some(t=>t.topic===currentTopic&&(t.category===subj));
-    const isOpen=treeExpanded[subj]||isActiveSubj;
+    const icon = SUBJECT_ICONS[subj]||"📚";
+    const isActiveSubj = treeData.some(t=>t.topic===currentTopic && t.category===subj);
+    const isOpen = treeExpanded[subj] || isActiveSubj;
+    const visitedCount = treeData.filter(t=>t.category===subj).length;
+    const levelTopics = treeTopics[subj] || BASE_TOPICS[subj] || [];
 
-    // Get topics for this subject at current tree level
-    const levelTopics=(treeTopics[subj]||[]);
-    const visitedTopicsInSubj=treeData.filter(t=>t.category===subj);
-    const visitedCount=visitedTopicsInSubj.length;
-
-    html+=`<div class="tree-subject">
+    html += `<div class="tree-subject">
       <div class="tree-subject-hd${isOpen?" open":""}" onclick="toggleSubj('${esc(subj)}')">
         <span class="tree-chev${isOpen?" open":""}">&#x203A;</span>
         <span class="tree-subj-icon">${icon}</span>
@@ -311,205 +288,185 @@ function renderTree(){
       </div>
       <div class="tree-subject-body${isOpen?" open":""}">`;
 
-    if(!levelTopics.length){
-      html+=`<div style="font-size:11px;color:var(--text3);padding:6px 8px;">Loading topics…</div>`;
-    } else {
-      levelTopics.forEach(topicName=>{
-        const tl=topicName.toLowerCase();
-        const visited=visitedMap[tl];
-        const isActiveTopic=currentTopic===topicName||(visited&&currentTopic===visited.topic);
-        const isTopicOpen=topicExpanded[tl]||isActiveTopic;
-        const exploredBranches=visited?visited.branches:[];
-        const dotClass=visited?"visited":"unvisited";
+    levelTopics.forEach(topicName=>{
+      const tl = topicName.toLowerCase();
+      const visited = visitedMap[tl];
+      const isActiveTopic = currentTopic===topicName || (visited&&currentTopic===visited.topic);
+      const isTopicOpen = topicExpanded[tl] || isActiveTopic;
+      const exploredBranches = visited ? visited.branches : [];
+      const dotCls = visited ? "visited" : "unvisited";
 
-        html+=`<div class="tree-topic">
-          <div class="tree-topic-hd${isActiveTopic&&!currentBranch?" active":""}" onclick="handleTopicClick('${esc(topicName)}','${esc(subj)}','${esc(tl)}')">
-            <span class="tree-topic-dot ${dotClass}"></span>
-            <span class="tree-topic-label">${esc(topicName)}</span>
-            ${visited?`<span class="tree-topic-visits">&#x00D7;${visited.visits}</span>`:""}
-          </div>
-          <div class="tree-topic-body${isTopicOpen?" open":""}">`;
+      html += `<div class="tree-topic">
+        <div class="tree-topic-hd${isActiveTopic&&!currentBranch?" active":""}" onclick="handleTopicClick('${esc(topicName)}','${esc(subj)}','${esc(tl)}')">
+          <span class="tree-topic-dot ${dotCls}"></span>
+          <span class="tree-topic-label">${esc(topicName)}</span>
+          ${visited?`<span class="tree-topic-visits">&#x00D7;${visited.visits}</span>`:""}
+        </div>
+        <div class="tree-topic-body${isTopicOpen?" open":""}">`;
 
-        if(exploredBranches.length){
-          html+=`<div class="tree-sec-label">Explored</div>`;
-          exploredBranches.forEach(b=>{
-            const active=isActiveTopic&&currentBranch===b;
-            html+=`<div class="tree-branch explored${active?" active":""}" onclick="doExplore('${esc(topicName)}','${esc(b)}')">${esc(b)}</div>`;
-          });
-        }
-        html+=`</div></div>`;
-      });
-    }
-    html+=`</div></div>`;
+      if(exploredBranches.length){
+        html += `<div class="tree-sec-label">Explored</div>`;
+        exploredBranches.forEach(b=>{
+          const active = isActiveTopic && currentBranch===b;
+          html += `<div class="tree-branch explored${active?" active":""}" onclick="doExplore('${esc(topicName)}','${esc(b)}')">${esc(b)}</div>`;
+        });
+      }
+      html += `</div></div>`;
+    });
+
+    html += `</div></div>`;
   });
 
-  wrap.innerHTML=html||`<div style="font-size:12px;color:var(--text3);text-align:center;padding:28px 14px;">Loading tree…</div>`;
+  wrap.innerHTML = html || `<div style="padding:20px;font-size:12px;color:var(--text3);text-align:center;">No topics loaded.</div>`;
 }
 
 function toggleSubj(s){
-  treeExpanded[s]=!treeExpanded[s];
+  treeExpanded[s] = !treeExpanded[s];
   saveTreeState();
-  // Lazy-load tree topics for this subject if opening and not yet loaded
-  if(treeExpanded[s]&&(!treeTopics[s]||treeTopics[s].length===0)){
+  if(treeExpanded[s]){
     fetch("/api/tree/refresh",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({subject:s,level:treeLevel})})
-      .then(r=>r.json()).then(d=>{if(d.topics){treeTopics[s]=d.topics;renderTree();}}).catch(()=>{});
+      .then(r=>r.json()).then(d=>{ if(d.topics&&d.topics.length){ treeTopics[s]=d.topics; renderTree(); } }).catch(()=>{});
   }
   renderTree();
 }
 
 function handleTopicClick(topic,category,tl){
-  if(currentTopic===topic&&!currentBranch){topicExpanded[tl]=!topicExpanded[tl];saveTreeState();renderTree();}
-  else{topicExpanded[tl]=true;saveTreeState();loadTopic(topic,category);}
-}
-
-function loadTopic(topic,category){
-  currentCategory=category||"general";
-  doExplore(topic,null);
+  if(currentTopic===topic&&!currentBranch){ topicExpanded[tl]=!topicExpanded[tl]; saveTreeState(); renderTree(); }
+  else{ topicExpanded[tl]=true; saveTreeState(); currentCategory=category||"general"; doExplore(topic,null); }
 }
 
 // ── Search ────────────────────────────────────────────
 function handleSearchInput(val){
-  const hint=document.getElementById("search-hint");
-  if(!val.trim()){hint.textContent="";hint.classList.remove("visible");return;}
-  const q=val.toLowerCase();
-  const match=treeData.find(t=>t.topic.toLowerCase()===q);
-  hint.textContent=match?"↵ Open: "+match.topic:"↵ Explore new topic";
+  const hint = document.getElementById("search-hint");
+  if(!val.trim()){ hint.textContent=""; hint.classList.remove("visible"); return; }
+  const match = treeData.find(t=>t.topic.toLowerCase()===val.toLowerCase());
+  hint.textContent = match ? "↵ Open: "+match.topic : "↵ Explore new topic";
   hint.classList.add("visible");
 }
-function handleSearchKey(e){if(e.key==="Enter")triggerSearch();}
+function handleSearchKey(e){ if(e.key==="Enter") triggerSearch(); }
 function triggerSearch(){
-  const val=document.getElementById("tree-search").value.trim();
-  if(!val||val.length<2)return;
-  const q=val.toLowerCase();
-  const exact=treeData.find(t=>t.topic.toLowerCase()===q);
-  document.getElementById("tree-search").value="";
-  document.getElementById("search-hint").textContent="";
+  const val = document.getElementById("tree-search").value.trim();
+  if(!val||val.length<2) return;
+  document.getElementById("tree-search").value = "";
+  document.getElementById("search-hint").textContent = "";
   document.getElementById("search-hint").classList.remove("visible");
-  if(exact){loadTopic(exact.topic,exact.category);return;}
-  // Guess category from tree topics
-  let guessedCategory="general";
-  for(const [subj,topics] of Object.entries(treeTopics)){
-    if(topics.some(t=>t.toLowerCase()===q)){guessedCategory=subj;break;}
+  const exact = treeData.find(t=>t.topic.toLowerCase()===val.toLowerCase());
+  if(exact){ currentCategory=exact.category||"general"; doExplore(exact.topic,null); return; }
+  let guessedCat = "general";
+  for(const [subj,topics] of Object.entries(treeTopics||BASE_TOPICS)){
+    if(topics.some(t=>t.toLowerCase()===val.toLowerCase())){ guessedCat=subj; break; }
   }
-  currentCategory=guessedCategory;
-  doExplore(val,null);
+  currentCategory = guessedCat;
+  doExplore(val, null);
 }
 
-// ── Visual toggles ────────────────────────────────────
+// ── Visuals toggle ────────────────────────────────────
 function toggleVis(type){
-  visPrefs[type]=!visPrefs[type];
+  visPrefs[type] = !visPrefs[type];
   document.getElementById("vis-"+type).classList.toggle("active",visPrefs[type]);
-  if(currentTopic)renderLevel(currentLevel);
+  if(currentTopic) renderLevel(currentLevel);
 }
 
-// ── Wikipedia images — section-specific ──────────────
+// ── Wikipedia images (section-specific) ──────────────
 async function fetchImages(query){
-  if(imageCache[query])return imageCache[query];
+  if(imageCache[query]) return imageCache[query];
   try{
-    const sr=await fetch(`${WIKI_API}?action=query&list=search&srsearch=${encodeURIComponent(query)}&srlimit=2&format=json&origin=*`);
-    const sd=await sr.json();
-    const pages=sd.query&&sd.query.search;
-    if(!pages||!pages.length){imageCache[query]=[];return[];}
-    // Use top search result — most relevant to the query
-    const title=pages[0].title;
-    const ir=await fetch(`${WIKI_API}?action=query&titles=${encodeURIComponent(title)}&prop=images&imlimit=10&format=json&origin=*`);
-    const id=await ir.json();
-    const pd=Object.values((id.query&&id.query.pages)||{})[0];
-    const imgTitles=((pd&&pd.images)||[])
-      .filter(i=>/\.(jpg|jpeg|png)$/i.test(i.title)
-        &&!/icon|logo|flag|map|symbol|seal|coat|signature|arrow|button|blank|commons|wiki|portal/i.test(i.title))
-      .slice(0,5);
-    if(!imgTitles.length){imageCache[query]=[];return[];}
-    const titles=imgTitles.map(i=>i.title).join("|");
-    const inr=await fetch(`${WIKI_API}?action=query&titles=${encodeURIComponent(titles)}&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=400&format=json&origin=*`);
-    const ind=await inr.json();
-    const imgs=Object.values((ind.query&&ind.query.pages)||{}).map(p=>{
-      const info=p.imageinfo&&p.imageinfo[0];
-      if(!info||!info.url)return null;
-      const cap=((info.extmetadata&&info.extmetadata.ImageDescription&&info.extmetadata.ImageDescription.value)||"").replace(/<[^>]*>/g,"").slice(0,100);
-      const title=(p.title||"").replace("File:","").replace(/\.[a-z]+$/i,"");
-      // Relevance check — image title should loosely relate to query words
-      const qWords=query.toLowerCase().split(/\s+/).filter(w=>w.length>3);
-      const imgText=(cap+" "+title).toLowerCase();
-      const isRelevant=qWords.some(w=>imgText.includes(w));
-      if(!isRelevant&&qWords.length>1)return null; // skip unrelated images
-      return{src:info.thumburl||info.url,caption:cap||title};
+    const sr = await fetch(`${WIKI_API}?action=query&list=search&srsearch=${encodeURIComponent(query)}&srlimit=2&format=json&origin=*`);
+    const sd = await sr.json();
+    const pages = sd.query&&sd.query.search;
+    if(!pages||!pages.length){ imageCache[query]=[]; return []; }
+    const title = pages[0].title;
+    const ir = await fetch(`${WIKI_API}?action=query&titles=${encodeURIComponent(title)}&prop=images&imlimit=10&format=json&origin=*`);
+    const id = await ir.json();
+    const pd = Object.values((id.query&&id.query.pages)||{})[0];
+    const imgTitles = ((pd&&pd.images)||[]).filter(i=>/\.(jpg|jpeg|png)$/i.test(i.title)&&!/icon|logo|flag|map|symbol|seal|coat|signature|arrow|button|blank|commons|wiki|portal/i.test(i.title)).slice(0,5);
+    if(!imgTitles.length){ imageCache[query]=[]; return []; }
+    const titles = imgTitles.map(i=>i.title).join("|");
+    const inr = await fetch(`${WIKI_API}?action=query&titles=${encodeURIComponent(titles)}&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=400&format=json&origin=*`);
+    const ind = await inr.json();
+    const qWords = query.toLowerCase().split(/\s+/).filter(w=>w.length>3);
+    const imgs = Object.values((ind.query&&ind.query.pages)||{}).map(p=>{
+      const info = p.imageinfo&&p.imageinfo[0];
+      if(!info||!info.url) return null;
+      const cap = ((info.extmetadata&&info.extmetadata.ImageDescription&&info.extmetadata.ImageDescription.value)||"").replace(/<[^>]*>/g,"").slice(0,100);
+      const imgTitle = (p.title||"").replace("File:","").replace(/\.[a-z]+$/i,"");
+      const imgText = (cap+" "+imgTitle).toLowerCase();
+      const relevant = qWords.length<=1 || qWords.some(w=>imgText.includes(w));
+      if(!relevant) return null;
+      return {src:info.thumburl||info.url, caption:cap||imgTitle};
     }).filter(Boolean).slice(0,3);
-    imageCache[query]=imgs;
+    imageCache[query] = imgs;
     return imgs;
-  }catch(e){imageCache[query]=[];return[];}
+  }catch(e){ imageCache[query]=[]; return []; }
 }
 
 // ── Main explore ──────────────────────────────────────
-async function doExplore(topic,branch){
-  if(bgCtrl)bgCtrl.abort();
-  bgCtrl=new AbortController();
-  const key=cacheKey(topic,branch);
-  currentTopic=topic;currentBranch=branch;currentLevel="grade5";
-  pendingSectionScroll=null;
+async function doExplore(topic, branch){
+  if(bgCtrl) bgCtrl.abort();
+  bgCtrl = new AbortController();
+  const key = cacheKey(topic,branch);
+  currentTopic=topic; currentBranch=branch; currentLevel="grade5"; pendingSectionScroll=null;
 
-  if(currentCategory&&currentCategory!=="general")treeExpanded[currentCategory]=true;
-  topicExpanded[(topic||"").toLowerCase()]=true;
-  saveTreeState();renderTree();
+  if(currentCategory&&currentCategory!=="general") treeExpanded[currentCategory]=true;
+  topicExpanded[(topic||"").toLowerCase()] = true;
+  saveTreeState(); renderTree();
 
   LEVELS.forEach(l=>{
-    const t=document.getElementById("tab-"+l);
+    const t = document.getElementById("tab-"+l);
     t.classList.remove("loaded","loading-now","active");
-    const sp=t.querySelector(".tab-spinner");if(sp)sp.remove();
+    const sp = t.querySelector(".tab-spinner"); if(sp) sp.remove();
   });
   document.getElementById("tab-grade5").classList.add("active");
   document.getElementById("visual-bar").classList.remove("visible");
-  showArticle(false);showEmpty(false);showSkeleton(true);
-
-  // Images now fetched per-section at render time, no prefetch needed
+  showArticle(false); showEmpty(false); showSkeleton(true);
 
   if(cache[key]&&cache[key].grade5){
-    showSkeleton(false);renderLevel("grade5");showArticle(true);
+    showSkeleton(false); renderLevel("grade5"); showArticle(true);
     document.getElementById("tab-grade5").classList.add("loaded");
     document.getElementById("visual-bar").classList.add("visible");
   } else {
     try{
-      const data=await fetchOneLevel(topic,branch,"grade5",null);
-      if(!cache[key])cache[key]={};
-      cache[key].grade5=data;
-      showSkeleton(false);renderLevel("grade5");showArticle(true);
+      const data = await fetchOneLevel(topic,branch,"grade5",null);
+      if(!cache[key]) cache[key]={};
+      cache[key].grade5 = data;
+      showSkeleton(false); renderLevel("grade5"); showArticle(true);
       document.getElementById("tab-grade5").classList.add("loaded");
       document.getElementById("visual-bar").classList.add("visible");
-      trackView(topic, "grade5", currentCategory, "explore");
+      trackView(topic,"grade5",currentCategory,"explore");
       fetchRepo();
     }catch(e){
-      showSkeleton(false);showEmpty(true);
-      document.getElementById("empty").innerHTML=`<div class="icon">&#x26A0;&#xFE0F;</div><p>${esc(e.message||"Failed to load. Check API key.")}</p>`;
+      showSkeleton(false); showEmpty(true);
+      document.getElementById("empty").innerHTML=`<div class="icon">⚠️</div><p>${esc(e.message||"Failed to load. Check API key.")}</p>`;
       return;
     }
   }
 
-  const remaining=LEVELS.slice(1).filter(l=>!(cache[key]&&cache[key][l]));
+  const remaining = LEVELS.slice(1).filter(l=>!(cache[key]&&cache[key][l]));
   if(remaining.length)(async()=>{
     for(let i=0;i<remaining.length;i++){
-      const lvl=remaining[i];
-      const prevLvl=LEVELS[LEVELS.indexOf(lvl)-1];
-      const prevContent=(cache[key]&&cache[key][prevLvl]&&cache[key][prevLvl].content)||null;
-      const tab=document.getElementById("tab-"+lvl);
+      const lvl = remaining[i];
+      const prevLvl = LEVELS[LEVELS.indexOf(lvl)-1];
+      const prevContent = (cache[key]&&cache[key][prevLvl]&&cache[key][prevLvl].content)||null;
+      const tab = document.getElementById("tab-"+lvl);
       tab.classList.add("loading-now");
-      if(!tab.querySelector(".tab-spinner")){const sp=document.createElement("span");sp.className="tab-spinner";tab.appendChild(sp);}
+      if(!tab.querySelector(".tab-spinner")){ const sp=document.createElement("span"); sp.className="tab-spinner"; tab.appendChild(sp); }
       try{
-        if(bgCtrl.signal.aborted)break;
-        const data=await fetchOneLevel(topic,branch,lvl,prevContent,bgCtrl.signal);
-        if(bgCtrl.signal.aborted)break;
-        if(!cache[key])cache[key]={};
-        cache[key][lvl]=data;
+        if(bgCtrl.signal.aborted) break;
+        const data = await fetchOneLevel(topic,branch,lvl,prevContent,bgCtrl.signal);
+        if(bgCtrl.signal.aborted) break;
+        if(!cache[key]) cache[key]={};
+        cache[key][lvl] = data;
         tab.classList.remove("loading-now");
-        const sp=tab.querySelector(".tab-spinner");if(sp)sp.remove();
+        const sp = tab.querySelector(".tab-spinner"); if(sp) sp.remove();
         tab.classList.add("loaded");
         if(currentLevel===lvl&&currentTopic===topic&&currentBranch===branch){
           renderLevel(lvl);
-          trackView(topic, lvl, currentCategory, "level_switch");
+          trackView(topic,lvl,currentCategory,"level_switch");
         }
       }catch(e){
-        if(e.name==="AbortError")break;
+        if(e.name==="AbortError") break;
         tab.classList.remove("loading-now");
-        const sp=tab.querySelector(".tab-spinner");if(sp)sp.remove();
+        const sp = tab.querySelector(".tab-spinner"); if(sp) sp.remove();
       }
     }
   })();
@@ -517,30 +474,30 @@ async function doExplore(topic,branch){
 
 async function fetchOneLevel(topic,branch,level,prevContent,signal){
   const opts={method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic,branch,category:currentCategory,level,prevContent:prevContent?prevContent.slice(0,1400):null})};
-  if(signal)opts.signal=signal;
-  const r=await fetch("/api/explore",opts);
-  const d=await r.json();
-  if(d.error)throw new Error(d.error);
-  if(!d.levels||!d.levels[level])throw new Error("Empty response for level: "+level);
+  if(signal) opts.signal=signal;
+  const r = await fetch("/api/explore",opts);
+  const d = await r.json();
+  if(d.error) throw new Error(d.error);
+  if(!d.levels||!d.levels[level]) throw new Error("Empty response for level: "+level);
   return d.levels[level];
 }
 
 // ── Level switching ───────────────────────────────────
 function switchLevel(lvl){
-  if(!currentTopic)return;
-  const key=cacheKey(currentTopic,currentBranch);
-  currentLevel=lvl;
+  if(!currentTopic) return;
+  const key = cacheKey(currentTopic,currentBranch);
+  currentLevel = lvl;
   LEVELS.forEach(l=>document.getElementById("tab-"+l).classList.toggle("active",l===lvl));
   if(cache[key]&&cache[key][lvl]){
-    renderLevel(lvl);document.getElementById("content").scrollTop=0;
-    if(pendingSectionScroll){scrollToSection(pendingSectionScroll);pendingSectionScroll=null;}
+    renderLevel(lvl); document.getElementById("content").scrollTop=0;
+    if(pendingSectionScroll){ scrollToSection(pendingSectionScroll); pendingSectionScroll=null; }
   } else {
-    showArticle(false);showSkeleton(true);
-    const iv=setInterval(()=>{
+    showArticle(false); showSkeleton(true);
+    const iv = setInterval(()=>{
       if(cache[key]&&cache[key][lvl]){
-        clearInterval(iv);showSkeleton(false);renderLevel(lvl);showArticle(true);
+        clearInterval(iv); showSkeleton(false); renderLevel(lvl); showArticle(true);
         document.getElementById("content").scrollTop=0;
-        if(pendingSectionScroll){scrollToSection(pendingSectionScroll);pendingSectionScroll=null;}
+        if(pendingSectionScroll){ scrollToSection(pendingSectionScroll); pendingSectionScroll=null; }
       }
     },400);
   }
@@ -548,67 +505,135 @@ function switchLevel(lvl){
 
 function scrollToSection(heading){
   setTimeout(()=>{
-    const sections=document.querySelectorAll(".sec-title");
-    for(const s of sections){
-      if(s.textContent.trim().toLowerCase()===heading.toLowerCase()){
+    document.querySelectorAll(".sec-title").forEach(s=>{
+      if(s.textContent.trim().toLowerCase()===heading.toLowerCase())
         s.closest(".sec-block")?.scrollIntoView({behavior:"smooth",block:"start"});
-        break;
-      }
+    });
+  },200);
+}
+
+// ── Go deeper / Go higher ────────────────────────────
+function goDeeper(sectionHeading){
+  const idx = LEVELS.indexOf(currentLevel);
+  if(idx<LEVELS.length-1){
+    const next = LEVELS[idx+1];
+    pendingSectionScroll = sectionHeading;
+    currentLevel = next;
+    LEVELS.forEach(l=>document.getElementById("tab-"+l).classList.toggle("active",l===next));
+    const key = cacheKey(currentTopic,currentBranch);
+    if(cache[key]&&cache[key][next]){
+      renderLevel(next); document.getElementById("content").scrollTop=0;
+      scrollToSection(sectionHeading); pendingSectionScroll=null;
+    } else {
+      showArticle(false); showSkeleton(true);
+      document.getElementById("content").scrollTop=0;
+      const topicEl=document.getElementById("sk-topic"); if(topicEl) topicEl.textContent=currentBranch||currentTopic||"";
+      const statusEl=document.getElementById("sk-status"); if(statusEl) statusEl.textContent=`Generating ${LEVEL_LABELS[next]} level — continuing from "${sectionHeading}"…`;
+      LEVELS.forEach(l=>{
+        const el=document.getElementById("sk-lvl-"+l); if(!el) return;
+        if(l===next){el.style.background="var(--accent)";el.style.color="#fff";}
+        else if(LEVELS.indexOf(l)<idx+1){el.style.background="var(--accent-bg)";el.style.color="var(--accent-text)";}
+        else{el.style.background="var(--bg3)";el.style.color="var(--text3)";}
+      });
+      const iv=setInterval(()=>{
+        if(cache[key]&&cache[key][next]){
+          clearInterval(iv); showSkeleton(false); renderLevel(next); showArticle(true);
+          document.getElementById("content").scrollTop=0;
+          scrollToSection(sectionHeading); pendingSectionScroll=null;
+        }
+      },400);
     }
-  },150);
+  } else { doExplore(currentTopic,sectionHeading); }
+}
+
+function goHigher(sectionHeading){
+  const idx = LEVELS.indexOf(currentLevel);
+  if(idx<=0) return;
+  const prev = LEVELS[idx-1];
+  pendingSectionScroll = sectionHeading;
+  currentLevel = prev;
+  LEVELS.forEach(l=>document.getElementById("tab-"+l).classList.toggle("active",l===prev));
+  const key = cacheKey(currentTopic,currentBranch);
+  if(cache[key]&&cache[key][prev]){
+    renderLevel(prev); document.getElementById("content").scrollTop=0;
+    scrollToSection(sectionHeading); pendingSectionScroll=null;
+  } else {
+    showArticle(false); showSkeleton(true);
+    const statusEl=document.getElementById("sk-status"); if(statusEl) statusEl.textContent=`Loading ${LEVEL_LABELS[prev]} level…`;
+    const iv=setInterval(()=>{
+      if(cache[key]&&cache[key][prev]){
+        clearInterval(iv); showSkeleton(false); renderLevel(prev); showArticle(true);
+        document.getElementById("content").scrollTop=0;
+        scrollToSection(sectionHeading); pendingSectionScroll=null;
+      }
+    },400);
+  }
+}
+
+function jumpToPrereq(concept, targetLevel){
+  currentLevel = targetLevel;
+  LEVELS.forEach(l=>document.getElementById("tab-"+l).classList.toggle("active",l===targetLevel));
+  const key = cacheKey(currentTopic,currentBranch);
+  if(cache[key]&&cache[key][targetLevel]){
+    renderLevel(targetLevel); document.getElementById("content").scrollTop=0;
+  } else {
+    showArticle(false); showSkeleton(true);
+    const statusEl=document.getElementById("sk-status"); if(statusEl) statusEl.textContent=`Loading ${LEVEL_LABELS[targetLevel]} level for context on "${concept}"…`;
+    const iv=setInterval(()=>{
+      if(cache[key]&&cache[key][targetLevel]){
+        clearInterval(iv); showSkeleton(false); renderLevel(targetLevel); showArticle(true);
+      }
+    },400);
+  }
+}
+
+function jumpToDeeper(concept){
+  doExplore(currentTopic, concept);
 }
 
 // ── Render level ──────────────────────────────────────
-function renderLevel(lvl){
-  const key=cacheKey(currentTopic,currentBranch);
-  const data=cache[key]&&cache[key][lvl];
-  if(!data)return;
+async function renderLevel(lvl){
+  const key = cacheKey(currentTopic,currentBranch);
+  const data = cache[key]&&cache[key][lvl];
+  if(!data) return;
 
-  document.getElementById("article-bc").innerHTML=currentBranch?`<span>${esc(currentTopic)}</span> &rarr; ${esc(currentBranch)}`:"";
-  document.getElementById("article-title").textContent=currentBranch||currentTopic;
-  document.getElementById("article-meta").textContent=LEVEL_BUILD[lvl];
+  document.getElementById("article-bc").innerHTML = currentBranch?`<span>${esc(currentTopic)}</span> &rarr; ${esc(currentBranch)}`:"";
+  document.getElementById("article-title").textContent = currentBranch||currentTopic;
+  document.getElementById("article-meta").textContent = LEVEL_BUILD[lvl];
 
-  const sections=parseSections(data.content);
-  const body=document.getElementById("article-body");
+  const sections = parseSections(data.content);
+  const body = document.getElementById("article-body");
+  const levelIdx = LEVELS.indexOf(lvl);
+  const hasHigher = levelIdx>0;
+  const hasDeeper = levelIdx<LEVELS.length-1;
 
-  // Fetch images for the first section heading (most specific query)
-  const firstSectionQuery=sections.length>0
-    ? sections[0].heading+" "+(currentBranch||currentTopic)
-    : (currentBranch||currentTopic);
-  const imgs=imageCache[firstSectionQuery]||(await fetchImages(firstSectionQuery).catch(()=>[]));
-
-  const levelIdx=LEVELS.indexOf(lvl);
-  const hasHigher=levelIdx>0;
-  const hasDeeper=levelIdx<LEVELS.length-1;
+  const firstQuery = sections.length>0 ? sections[0].heading+" "+(currentBranch||currentTopic) : (currentBranch||currentTopic);
+  const imgs = await fetchImages(firstQuery).catch(()=>[]);
 
   let html="";
   sections.forEach((s,idx)=>{
-    const sectionContent=s.paragraphs.map(p=>renderParagraph(p)).join("");
     const navBtns=`<div class="sec-nav-btns">
       ${hasHigher?`<button class="higher-btn" onclick="goHigher('${esc(s.heading)}')">&#x2190; Go higher</button>`:""}
       ${hasDeeper?`<button class="deeper-btn" onclick="goDeeper('${esc(s.heading)}')">&#x2192; Go deeper</button>`:""}
     </div>`;
-    html+=`<div class="sec-block" data-heading="${esc(s.heading)}">
-      <div class="sec-hdr">
-        <div class="sec-title">${esc(s.heading)}</div>
-        ${navBtns}
-      </div>
-      ${sectionContent}
+    html += `<div class="sec-block" data-heading="${esc(s.heading)}">
+      <div class="sec-hdr"><div class="sec-title">${esc(s.heading)}</div>${navBtns}</div>
+      ${s.paragraphs.map(p=>renderParagraph(p,lvl)).join("")}
     </div>`;
-    if(idx===0&&visPrefs.images&&imgs.length)html+=buildImgStrip(imgs);
-    if(idx===1&&visPrefs.flowchart&&data.flowchart)html+=buildFlowchart(data.flowchart,data.flowchartTitle||"Process overview");
-    if(idx===2&&visPrefs.conceptmap&&data.conceptMap)html+=buildConceptMap(data.conceptMap,data.conceptMapTitle||"Concept map");
+    if(idx===0&&visPrefs.images&&imgs.length) html+=buildImgStrip(imgs);
+    if(idx===1&&visPrefs.flowchart&&data.flowchart) html+=buildFlowchart(data.flowchart,data.flowchartTitle||"Process overview");
+    if(idx===2&&visPrefs.conceptmap&&data.conceptMap) html+=buildConceptMap(data.conceptMap,data.conceptMapTitle||"Concept map");
   });
-  body.innerHTML=html;
+  body.innerHTML = html;
 
-  const bg=document.getElementById("branches-grid");
-  bg.innerHTML=(data.branches||[]).map(b=>`<button class="branch-btn" onclick="doExplore('${esc(currentTopic)}','${esc(b)}')">${esc(b)} &#x2197;</button>`).join("");
-  document.getElementById("branches").style.display=(data.branches&&data.branches.length)?"block":"none";
+  const bg = document.getElementById("branches-grid");
+  bg.innerHTML = (data.branches||[]).map(b=>`<button class="branch-btn" onclick="doExplore('${esc(currentTopic)}','${esc(b)}')">${esc(b)} &#x2197;</button>`).join("");
+  document.getElementById("branches").style.display = (data.branches&&data.branches.length)?"block":"none";
 
-  const bib=data.bibliography||[];
-  const bl=document.getElementById("bib-list");
+  const bib = data.bibliography||[];
+  const bl = document.getElementById("bib-list");
   if(bib.length){
-    bl.innerHTML=bib.map(c=>`<div class="cit-item"><span class="cit-num">[${esc(c.ref)}]</span><span class="cit-text">${esc(c.authors)} (${esc(c.year)}). <em>${esc(c.title)}</em>. ${esc(c.source)}.</span></div>`).join("");
+    bl.innerHTML = bib.map(c=>`<div class="cit-item"><span class="cit-num">[${esc(c.ref)}]</span><span class="cit-text">${esc(c.authors)} (${esc(c.year)}). <em>${esc(c.title)}</em>. ${esc(c.source)}.</span></div>`).join("");
     document.getElementById("bibliography").style.display="block";
   } else document.getElementById("bibliography").style.display="none";
 
@@ -616,98 +641,46 @@ function renderLevel(lvl){
   typesetMath(body);
 }
 
-// ── Go higher — mirror of go deeper ──────────────────
-function goHigher(sectionHeading){
-  const idx=LEVELS.indexOf(currentLevel);
-  if(idx<=0)return; // already at 5th grade
-  const prev=LEVELS[idx-1];
-  pendingSectionScroll=sectionHeading;
-  currentLevel=prev;
-  LEVELS.forEach(l=>document.getElementById("tab-"+l).classList.toggle("active",l===prev));
-  const key=cacheKey(currentTopic,currentBranch);
-  if(cache[key]&&cache[key][prev]){
-    renderLevel(prev);
-    document.getElementById("content").scrollTop=0;
-    scrollToSection(sectionHeading);
-    pendingSectionScroll=null;
-  } else {
-    showArticle(false);showSkeleton(true);
-    const statusEl=document.getElementById("sk-status");
-    if(statusEl)statusEl.textContent=`Loading ${LEVEL_LABELS[prev]} level…`;
-    // Mark past levels as done in skeleton pills
-    LEVELS.forEach(l=>{
-      const el=document.getElementById("sk-lvl-"+l);if(!el)return;
-      if(l===prev){el.style.background="var(--accent)";el.style.color="#fff";}
-      else{el.style.background="var(--bg3)";el.style.color="var(--text3)";}
-    });
-    const iv=setInterval(()=>{
-      if(cache[key]&&cache[key][prev]){
-        clearInterval(iv);showSkeleton(false);renderLevel(prev);showArticle(true);
-        document.getElementById("content").scrollTop=0;
-        scrollToSection(sectionHeading);
-        pendingSectionScroll=null;
-      }
-    },400);
-  }
+function renderParagraph(text, lvl){
+  const blocks=[];
+  let remaining=text;
+  remaining=remaining.replace(/\$\$([\s\S]+?)\$\$/g,(m,inner)=>{ blocks.push(inner.trim()); return`%%BLOCK${blocks.length-1}%%`; });
+  const parts=remaining.split(/(%%BLOCK\d+%%)/);
+  let html="";
+  parts.forEach(part=>{
+    const bm=part.match(/%%BLOCK(\d+)%%/);
+    if(bm){
+      html+=`<div class="formula-card"><div class="formula-card-label">Formula</div><div class="formula-card-body">\\[${blocks[parseInt(bm[1])]}\\]</div></div>`;
+    } else if(part.trim()){
+      const mathTokens=[];
+      let prose=part.replace(/\$((?!\$)[^\n$]+?)\$/g,(m)=>{ mathTokens.push(m); return`%%MATH${mathTokens.length-1}%%`; });
+      const prevLvl = LEVELS[LEVELS.indexOf(lvl||currentLevel)-1];
+      prose=prose.replace(/\[PREREQ:\s*([^\]]+)\]/g,(_,c)=>{
+        const tl=prevLvl||"grade5";
+        return`<span class="prereq-chip" onclick="jumpToPrereq('${esc(c.trim())}','${esc(tl)}')" title="See prerequisite at ${LEVEL_LABELS[tl]}">&#x2190; ${esc(c.trim())}</span>`;
+      });
+      prose=prose.replace(/\[DEEPER:\s*([^\]]+)\]/g,(_,c)=>{
+        return`<span class="deeper-chip" onclick="jumpToDeeper('${esc(c.trim())}')" title="Explore deeper">&#x2192; ${esc(c.trim())}</span>`;
+      });
+      prose=prose.replace(/%%MATH(\d+)%%/g,(_,i)=>mathTokens[parseInt(i)]);
+      prose=prose.replace(/\[(\d+)\]/g,'<sup style="color:var(--accent);font-size:11px;font-weight:600;">[$1]</sup>');
+      html+=`<p>${prose}</p>`;
+    }
+  });
+  return html||`<p>${text}</p>`;
 }
 
-
-function goDeeper(sectionHeading){
-  const idx=LEVELS.indexOf(currentLevel);
-  if(idx<LEVELS.length-1){
-    const next=LEVELS[idx+1];
-    pendingSectionScroll=sectionHeading;
-    currentLevel=next;
-
-    // Immediately update tabs so user sees the level switch
-    LEVELS.forEach(l=>document.getElementById("tab-"+l).classList.toggle("active",l===next));
-
-    const key=cacheKey(currentTopic,currentBranch);
-    if(cache[key]&&cache[key][next]){
-      // Already cached — render and scroll instantly
-      renderLevel(next);
-      document.getElementById("content").scrollTop=0;
-      scrollToSection(sectionHeading);
-      pendingSectionScroll=null;
-    } else {
-      // Not yet loaded — show skeleton immediately with clear messaging
-      showArticle(false);
-      showSkeleton(true);
-      document.getElementById("content").scrollTop=0;
-
-      // Update skeleton text to explain what's happening
-      const topicEl=document.getElementById("sk-topic");
-      const statusEl=document.getElementById("sk-status");
-      if(topicEl)topicEl.textContent=currentBranch||currentTopic||"";
-      if(statusEl)statusEl.textContent=`Generating ${LEVEL_LABELS[next]} level — continuing from "${sectionHeading}"…`;
-
-      // Highlight the target level pill in the skeleton
-      LEVELS.forEach(l=>{
-        const el=document.getElementById("sk-lvl-"+l);
-        if(!el)return;
-        const prevIdx=LEVELS.indexOf(l);
-        if(l===next){el.style.background="var(--accent)";el.style.color="#fff";}
-        else if(prevIdx<LEVELS.indexOf(next)){el.style.background="var(--accent-bg)";el.style.color="var(--accent-text)";}
-        else{el.style.background="var(--bg3)";el.style.color="var(--text3)";}
-      });
-
-      // Poll until the background fetch delivers this level
-      const iv=setInterval(()=>{
-        if(cache[key]&&cache[key][next]){
-          clearInterval(iv);
-          showSkeleton(false);
-          renderLevel(next);
-          showArticle(true);
-          document.getElementById("content").scrollTop=0;
-          scrollToSection(sectionHeading);
-          pendingSectionScroll=null;
-        }
-      },400);
-    }
-  } else {
-    // At PhD — explore the section heading as a branch
-    doExplore(currentTopic,sectionHeading);
+function parseSections(text){
+  const parts=text.split(/\[HEADING:\s*(.*?)\]/);
+  const sections=[];
+  for(let i=1;i<parts.length;i+=2){
+    const heading=parts[i].trim();
+    const content=(parts[i+1]||"").trim();
+    const paragraphs=content.split(/\n\n+/).filter(p=>p.trim().length>0);
+    if(heading) sections.push({heading,paragraphs});
   }
+  if(!sections.length) sections.push({heading:currentBranch||currentTopic||"Overview",paragraphs:text.split(/\n\n+/).filter(p=>p.trim().length>0)});
+  return sections;
 }
 
 // ── Visuals ───────────────────────────────────────────
@@ -715,7 +688,7 @@ function buildImgStrip(imgs){
   return`<div class="image-strip">${imgs.map(img=>`<div class="img-card"><img src="${esc(img.src)}" alt="${esc(img.caption)}" loading="lazy" onerror="this.parentElement.style.display='none'"><div class="img-cap">${esc(img.caption)}</div></div>`).join("")}</div>`;
 }
 function buildFlowchart(nodes,title){
-  if(!nodes||!nodes.length)return"";
+  if(!nodes||!nodes.length) return"";
   const W=520,PW=160,PH=44,GAP=56,PAD=20,cx=W/2;
   const svgH=nodes.length*(PH+GAP)+PAD*2;
   let svg=`<svg width="${W}" height="${svgH}" viewBox="0 0 ${W} ${svgH}" xmlns="http://www.w3.org/2000/svg">`;
@@ -725,20 +698,19 @@ function buildFlowchart(nodes,title){
     const fill=i===0?"#E1F5EE":i===nodes.length-1?"#EEEDFE":"#f7f6f3";
     const stroke=i===0?"#1D9E75":i===nodes.length-1?"#534AB7":"rgba(0,0,0,0.15)";
     const tc=i===0?"#0a5a40":i===nodes.length-1?"#3C3489":"#1a1a18";
-    const fw=i===0||i===nodes.length-1?"600":"400";
     svg+=`<rect x="${x}" y="${y}" width="${PW}" height="${PH}" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="0.5"/>`;
     const words=(n.label||"").split(" ");let line="";const lines=[];
     words.forEach(w=>{if((line+" "+w).trim().length>20&&line){lines.push(line);line=w;}else line=(line+" "+w).trim();});
     if(line)lines.push(line);
     const lh=16,sy=y+PH/2-(lines.length-1)*lh/2;
-    lines.forEach((ln,li)=>svg+=`<text x="${cx}" y="${sy+li*lh}" text-anchor="middle" dominant-baseline="central" font-size="12" fill="${tc}" font-weight="${fw}">${esc(ln)}</text>`);
+    lines.forEach((ln,li)=>svg+=`<text x="${cx}" y="${sy+li*lh}" text-anchor="middle" dominant-baseline="central" font-size="12" fill="${tc}">${esc(ln)}</text>`);
     if(i<nodes.length-1)svg+=`<line x1="${cx}" y1="${y+PH}" x2="${cx}" y2="${y+PH+GAP-6}" stroke="#9a9890" stroke-width="1" marker-end="url(#arr)"/>`;
   });
   svg+="</svg>";
   return`<div class="fc-wrap"><div class="fc-hdr">${esc(title)}</div><div class="fc-body">${svg}</div></div>`;
 }
 function buildConceptMap(nodes,title){
-  if(!nodes||!nodes.length)return"";
+  if(!nodes||!nodes.length) return"";
   const W=520,H=300,cx=W/2,cy=H/2,r=105;
   const hub=nodes[0],spokes=nodes.slice(1,7),n=spokes.length;
   let svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
@@ -755,77 +727,12 @@ function buildConceptMap(nodes,title){
   return`<div class="cm-wrap"><div class="cm-hdr">${esc(title)}</div><div class="cm-body">${svg}</div></div>`;
 }
 
-// ── Helpers ───────────────────────────────────────────
-function renderParagraph(text){
-  // Extract block math ($...$) and render as formula cards
-  // Extract inline math ($...$) and protect from citation processing
-  const blocks=[];
-  let remaining=text;
-
-  // Replace block math with placeholders
-  remaining=remaining.replace(/\$\$([\s\S]+?)\$\$/g,(m,inner)=>{
-    blocks.push({type:"block",content:inner.trim()});
-    return`%%BLOCK${blocks.length-1}%%`;
-  });
-
-  // Split on block placeholders to interleave formula cards with prose
-  const parts=remaining.split(/(%%BLOCK\d+%%)/);
-  let html="";
-  parts.forEach(part=>{
-    const bMatch=part.match(/%%BLOCK(\d+)%%/);
-    if(bMatch){
-      const b=blocks[parseInt(bMatch[1])];
-      html+=`<div class="formula-card"><div class="formula-card-label">Formula</div><div class="formula-card-body">\\[${escMath(b.content)}\\]</div></div>`;
-    } else if(part.trim()){
-      // Process inline math and citations in prose
-      html+=`<p>${addCitations(part)}</p>`;
-    }
-  });
-  return html||`<p>${addCitations(text)}</p>`;
-}
-
-function escMath(s){
-  // Don't HTML-escape math content — MathJax needs raw LaTeX
-  return s;
-}
-  const parts=text.split(/\[HEADING:\s*(.*?)\]/);
-  const sections=[];
-  for(let i=1;i<parts.length;i+=2){
-    const heading=parts[i].trim();
-    const content=(parts[i+1]||"").trim();
-    const paragraphs=content.split(/\n\n+/).filter(p=>p.trim().length>0);
-    if(heading)sections.push({heading,paragraphs});
-  }
-  if(!sections.length)sections.push({heading:currentBranch||currentTopic||"Overview",paragraphs:text.split(/\n\n+/).filter(p=>p.trim().length>0)});
-  return sections;
-}
-function addCitations(text){
-  const tokens=[];
-  let t=text
-    .replace(/\$\$([\s\S]+?)\$\$/g,(m)=>{tokens.push(m);return"%%M"+(tokens.length-1)+"%%";})
-    .replace(/\$((?!\$)[^\n]+?)\$/g,(m)=>{tokens.push(m);return"%%M"+(tokens.length-1)+"%%";});
-  t=t.replace(/\[(\d+)\]/g,'<sup style="color:var(--accent);font-size:11px;font-weight:600;">[$1]</sup>');
-  t=t.replace(/%%M(\d+)%%/g,(_,i)=>tokens[parseInt(i)]);
-  return t;
-}
-function typesetMath(el){
-  if(!el)return;
-  const doIt=()=>{
-    if(window.MathJax&&window.MathJax.typesetPromise){
-      // Clear previous typesetting and re-render
-      window.MathJax.typesetClear([el]);
-      window.MathJax.typesetPromise([el]).catch(()=>{});
-    }
-  };
-  if(window._mathJaxReady)doIt();
-  else{const iv=setInterval(()=>{if(window._mathJaxReady){clearInterval(iv);doIt();}},200);}
-}
-
+// ── Skeleton ──────────────────────────────────────────
 function showSkeleton(v){
   let sk=document.getElementById("skeleton");
   if(v){
     if(!sk){
-      sk=document.createElement("div");sk.id="skeleton";
+      sk=document.createElement("div"); sk.id="skeleton";
       sk.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px 30px;gap:24px;">
         <div style="position:relative;width:56px;height:56px;">
           <svg width="56" height="56" viewBox="0 0 56 56" style="animation:rotateRing 2s linear infinite;">
@@ -845,33 +752,32 @@ function showSkeleton(v){
           <div class="skeleton" style="height:13px;width:58%;border-radius:5px;"></div>
           <div class="skeleton" style="height:13px;width:84%;border-radius:5px;"></div>
           <div class="skeleton" style="height:13px;width:70%;border-radius:5px;"></div>
-          <div class="skeleton" style="height:13px;width:88%;border-radius:5px;margin-top:4px;"></div>
+          <div class="skeleton" style="height:13px;width:88%;border-radius:5px;"></div>
           <div class="skeleton" style="height:13px;width:76%;border-radius:5px;"></div>
         </div>
       </div>`;
       document.getElementById("content").prepend(sk);
     }
     sk.style.display="block";
-    const topicEl=document.getElementById("sk-topic");
-    if(topicEl)topicEl.textContent=currentBranch||currentTopic||"";
-    LEVELS.forEach(l=>{const el=document.getElementById("sk-lvl-"+l);if(el){el.style.background="var(--bg3)";el.style.color="var(--text3)";}});
-    const g5=document.getElementById("sk-lvl-grade5");
-    if(g5){g5.style.background="var(--accent)";g5.style.color="#fff";}
-  }else if(sk)sk.style.display="none";
+    const topicEl=document.getElementById("sk-topic"); if(topicEl) topicEl.textContent=currentBranch||currentTopic||"";
+    LEVELS.forEach(l=>{ const el=document.getElementById("sk-lvl-"+l); if(el){el.style.background="var(--bg3)";el.style.color="var(--text3)";} });
+    const g5=document.getElementById("sk-lvl-grade5"); if(g5){g5.style.background="var(--accent)";g5.style.color="#fff";}
+  } else if(sk) sk.style.display="none";
 }
-function showArticle(v){document.getElementById("article").style.display=v?"block":"none";}
-function showEmpty(v){document.getElementById("empty").style.display=v?"flex":"none";}
+function showArticle(v){ document.getElementById("article").style.display=v?"block":"none"; }
+function showEmpty(v){ document.getElementById("empty").style.display=v?"flex":"none"; }
 
-function trackView(topic, level, category, action="view"){
-  fetch("/api/analytics/track",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({topic,level,category,action})
-  }).catch(()=>{});
+function typesetMath(el){
+  if(!el) return;
+  const doIt=()=>{ if(window.MathJax&&window.MathJax.typesetPromise){ window.MathJax.typesetClear([el]); window.MathJax.typesetPromise([el]).catch(()=>{}); } };
+  if(window._mathJaxReady) doIt();
+  else{ const iv=setInterval(()=>{ if(window._mathJaxReady){clearInterval(iv);doIt();} },200); }
 }
-tex:{inlineMath:[["$","$"]],displayMath:[["$$","$$"]],processEscapes:true},options:{skipHtmlTags:["script","noscript","style","textarea","pre"]},startup:{ready(){MathJax.startup.defaultReady();window._mathJaxReady=true;}}};
 
-// Init
+// ── MathJax config (must be before any typesetting) ──
+window.MathJax={tex:{inlineMath:[["$","$"]],displayMath:[["$$","$$"]],processEscapes:true},options:{skipHtmlTags:["script","noscript","style","textarea","pre"]},startup:{ready(){MathJax.startup.defaultReady();window._mathJaxReady=true;}}};
+
+// ── Init ──────────────────────────────────────────────
 loadTreeTopics("grade5");
 fetchRepo();
 </script>
