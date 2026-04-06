@@ -391,9 +391,13 @@ async function fetchImages(query){
     const sd=await sr.json();const pages=sd.query&&sd.query.search;
     if(!pages||!pages.length){imageCache[query]=[];return[];}
     const title=pages[0].title;
-    const ir=await fetch(`${WIKI_API}?action=query&titles=${encodeURIComponent(title)}&prop=images&imlimit=10&format=json&origin=*`);
+    const ir=await fetch(`${WIKI_API}?action=query&titles=${encodeURIComponent(title)}&prop=images&imlimit=12&format=json&origin=*`);
     const id=await ir.json();const pd=Object.values((id.query&&id.query.pages)||{})[0];
-    const imgTitles=((pd&&pd.images)||[]).filter(i=>/\.(jpg|jpeg|png)$/i.test(i.title)&&!/icon|logo|flag|map|symbol|seal|coat|signature|arrow|button|blank|commons|wiki|portal/i.test(i.title)).slice(0,5);
+    const imgTitles=((pd&&pd.images)||[]).filter(i=>{
+      const n=i.title.toLowerCase();
+      return /\.(jpg|jpeg|png)$/i.test(i.title)
+        && !/icon|logo|flag|map|symbol|seal|coat|signature|arrow|button|blank|commons|wiki|portal|portrait|headshot|aircraft|airplane|boeing|airbus|plane|flag|coat_of_arms/i.test(n);
+    }).slice(0,6);
     if(!imgTitles.length){imageCache[query]=[];return[];}
     const titles=imgTitles.map(i=>i.title).join("|");
     const inr=await fetch(`${WIKI_API}?action=query&titles=${encodeURIComponent(titles)}&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=400&format=json&origin=*`);
@@ -401,10 +405,14 @@ async function fetchImages(query){
     const qWords=query.toLowerCase().split(/\s+/).filter(w=>w.length>3);
     const imgs=Object.values((ind.query&&ind.query.pages)||{}).map(p=>{
       const info=p.imageinfo&&p.imageinfo[0];if(!info||!info.url)return null;
-      const cap=((info.extmetadata&&info.extmetadata.ImageDescription&&info.extmetadata.ImageDescription.value)||"").replace(/<[^>]*>/g,"").slice(0,100);
+      const cap=((info.extmetadata&&info.extmetadata.ImageDescription&&info.extmetadata.ImageDescription.value)||"").replace(/<[^>]*>/g,"").slice(0,120);
       const imgTitle=(p.title||"").replace("File:","").replace(/\.[a-z]+$/i,"");
-      const relevant=qWords.length<=1||qWords.some(w=>(cap+" "+imgTitle).toLowerCase().includes(w));
+      const imgText=(cap+" "+imgTitle).toLowerCase();
+      // Require at least one query word to appear in image metadata
+      const relevant=qWords.length<=1||qWords.some(w=>imgText.includes(w));
       if(!relevant)return null;
+      // Hard block: skip if image title contains clearly unrelated subjects
+      if(/aircraft|airplane|boeing|airbus|helicopter|bird|flower|person|portrait|politician|prime_minister|president/i.test(imgTitle))return null;
       return{src:info.thumburl||info.url,caption:cap||imgTitle};
     }).filter(Boolean).slice(0,3);
     imageCache[query]=imgs;return imgs;
