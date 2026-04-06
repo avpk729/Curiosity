@@ -203,8 +203,15 @@ app.post("/api/explore", async (req, res) => {
 });
 
 app.get("/api/repository", (req, res) => {
-  const rows = db.prepare("SELECT topic, category, visits FROM topics ORDER BY visits DESC LIMIT 100").all();
-  res.json({ topics: rows });
+  const topics = db.prepare("SELECT topic, category, visits FROM topics ORDER BY visits DESC LIMIT 100").all();
+  // For each topic, get its explored branches
+  const withBranches = topics.map(t => {
+    const branches = db.prepare(
+      "SELECT DISTINCT branch FROM explanations WHERE topic_lower=? AND branch IS NOT NULL AND level='grade5' ORDER BY created_at ASC"
+    ).all(t.topic.toLowerCase()).map(r => r.branch);
+    return { ...t, branches };
+  });
+  res.json({ topics: withBranches });
 });
 
 app.listen(PORT, () => console.log(`Curiosity Wikipedia running on port ${PORT}`));
