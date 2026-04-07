@@ -30,18 +30,11 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
 
-/* ── STICKY HEADER ── */
-#sticky-header{
-  position:sticky;
-  top:0;
-  z-index:100;
-  background:var(--bg);
-  border-bottom:0.5px solid var(--border2);
-  box-shadow:0 2px 8px rgba(0,0,0,0.08);
-}
+/* Sticky Header */
+#sticky-header{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:0.5px solid var(--border2);box-shadow:0 2px 8px rgba(0,0,0,0.08);}
 #article-header{padding:16px 26px 12px;}
 
-/* ── Sidebar ── */
+/* Sidebar */
 #sidebar{width:272px;min-width:272px;border-right:0.5px solid var(--border2);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;overflow:hidden;}
 #sidebar-header{padding:14px 14px 8px;border-bottom:0.5px solid var(--border2);}
 #sidebar-header h1{font-size:14px;font-weight:600;color:var(--text);}
@@ -50,7 +43,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 #tree-search{width:100%;padding:7px 30px 7px 10px;font-size:13px;border:0.5px solid var(--border2);border-radius:8px;background:var(--bg2);color:var(--text);outline:none;}
 #tree-search:focus{border-color:var(--accent);}
 #search-go-btn{position:absolute;right:18px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:4px;}
-#search-go-btn:hover{color:var(--accent);}
 #tree-wrap{flex:1;overflow-y:auto;padding:4px 0 20px;}
 
 /* Tree nodes */
@@ -60,7 +52,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .t-subject-chev.open{transform:rotate(90deg);}
 .t-subject-icon{font-size:13px;flex-shrink:0;}
 .t-subject-label{font-size:13px;font-weight:500;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.t-subject-count{font-size:10px;color:var(--text3);background:var(--bg3);border-radius:99px;padding:1px 6px;flex-shrink:0;}
 .t-topic{display:flex;align-items:center;gap:5px;padding:5px 12px 5px 26px;cursor:pointer;transition:background 0.1s;}
 .t-topic:hover{background:var(--bg2);}
 .t-topic.active{background:var(--accent-bg);}
@@ -68,36 +59,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .t-topic-dot.visited{background:var(--accent);}
 .t-topic-dot.unvisited{background:var(--border2);}
 .t-topic-label{font-size:12px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.4;}
-.t-topic-visits{font-size:10px;color:var(--text3);flex-shrink:0;}
 
-/* Main panel */
+/* Main */
 #main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
 #content{flex:1;overflow-y:auto;padding:22px 26px 80px;max-width:820px;}
 
-/* Article sections */
+/* Article */
 .sec-block{margin-bottom:30px;}
 .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;padding-bottom:8px;border-bottom:0.5px solid var(--border);gap:8px;}
 .sec-title{font-size:15px;font-weight:600;color:var(--text);letter-spacing:-0.01em;flex:1;}
 .simplify-btn{padding:4px 14px;font-size:12px;font-weight:600;border-radius:99px;border:0.5px solid var(--border2);background:transparent;color:var(--accent);cursor:pointer;transition:all 0.15s;}
 .simplify-btn:hover{background:var(--accent-bg);border-color:var(--accent);}
 
-/* Inline concept links */
-.concept-link{font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;color:var(--text);cursor:pointer;transition:opacity 0.12s;}
-.concept-link:hover{opacity:0.65;}
-.concept-link.prereq-type{text-decoration-style:dashed;}
-.concept-link.deeper-type{text-decoration-style:solid;}
-
-/* Text selection popup */
-#selection-popup{position:fixed;background:var(--text);color:var(--bg);border-radius:6px;padding:5px 12px;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;display:none;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.2);transform:translateX(-50%);}
-
-/* Formula, Images, Flowcharts, Concept maps, Subtopics, Bibliography */
-.formula-card{margin:14px 0;background:var(--bg2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:12px 18px;overflow-x:auto;}
-.image-strip{display:flex;gap:10px;margin:14px 0;flex-wrap:wrap;}
-.img-card{border-radius:8px;overflow:hidden;border:0.5px solid var(--border);background:var(--bg2);flex:1;min-width:150px;max-width:240px;}
-.img-card img{width:100%;height:130px;object-fit:cover;display:block;}
-.subtopics-panel{margin-top:28px;padding-top:20px;border-top:0.5px solid var(--border);display:none;}
-.subtopic-item{padding:5px 12px;font-size:12px;border-radius:6px;border:0.5px solid var(--border2);background:var(--bg2);color:var(--text2);cursor:pointer;transition:all 0.12s;display:flex;align-items:center;gap:5px;}
-.bibliography{margin-top:24px;padding-top:18px;border-top:0.5px solid var(--border);display:none;}
+/* Level tabs */
+#level-tabs{display:flex;border-bottom:0.5px solid var(--border2);padding:0 26px;}
+.level-tab{padding:9px 16px;font-size:13px;font-weight:500;color:var(--text3);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.12s;margin-bottom:-0.5px;}
+.level-tab.active{color:var(--text);border-bottom-color:var(--accent);}
 
 /* Simplify Modal */
 #simplify-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1000;align-items:center;justify-content:center;}
@@ -105,12 +82,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 #simplify-header{padding:18px 24px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 #simplify-body{padding:24px;max-height:65vh;overflow-y:auto;line-height:1.75;font-size:15.5px;}
 
-/* Level tabs */
-#level-tabs{display:flex;border-bottom:0.5px solid var(--border2);padding:0 26px;}
-.level-tab{padding:9px 16px;font-size:13px;font-weight:500;color:var(--text3);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.12s;margin-bottom:-0.5px;}
-.level-tab.active{color:var(--text);border-bottom-color:var(--accent);}
-
-/* All remaining original styles (skeleton, visual-bar, etc.) are preserved below */
+/* Skeleton & misc */
 .skeleton{background:var(--bg2);border-radius:6px;animation:shimmer 1.4s ease-in-out infinite;}
 @keyframes shimmer{0%,100%{opacity:0.5;}50%{opacity:1;}}
-/* ... (every single original class you had is still here) ... */
