@@ -882,47 +882,65 @@ function typesetMath(el){
   if(!el)return;
   const doIt=()=>{
     if(!window.MathJax||!window.MathJax.typesetPromise)return;
-    // Inject LaTeX text into placeholder elements (use $$ delimiters — matches MathJax config)
     el.querySelectorAll(".formula-render[data-latex]").forEach(card=>{
       if(!card.dataset.populated){
-        card.textContent="$$"+card.dataset.latex+"$$";
-        card.dataset.populated="1";
+        // Use a script tag approach — most reliable across MathJax versions
+        card.innerHTML = "";
+        const s = document.createElement("script");
+        s.type = "math/tex; mode=display";
+        s.text = card.dataset.latex;
+        card.appendChild(s);
+        card.dataset.populated = "1";
       }
     });
     el.querySelectorAll(".math-inline[data-tex]").forEach(span=>{
       if(!span.dataset.populated){
-        span.textContent="$"+span.dataset.tex+"$";
-        span.dataset.populated="1";
+        span.innerHTML = "";
+        const s = document.createElement("script");
+        s.type = "math/tex";
+        s.text = span.dataset.tex;
+        span.appendChild(s);
+        span.dataset.populated = "1";
       }
     });
-    // Only set populated AFTER a successful typeset
     window.MathJax.typesetClear([el]);
     window.MathJax.typesetPromise([el]).catch(err=>{
-      // On failure reset populated flags so next render can retry
+      console.warn("MathJax error:", err);
+      // Reset on failure so next render retries
       el.querySelectorAll(".formula-render[data-populated],.math-inline[data-populated]")
-        .forEach(n=>delete n.dataset.populated);
+        .forEach(n=>{ delete n.dataset.populated; n.innerHTML=""; });
     });
   };
-  if(window._mathJaxReady)doIt();
+  if(window._mathJaxReady) doIt();
   else{
     let attempts=0;
     const iv=setInterval(()=>{
       attempts++;
-      if(window._mathJaxReady){clearInterval(iv);doIt();}
-      else if(attempts>50)clearInterval(iv); // give up after 10s
+      if(window._mathJaxReady){ clearInterval(iv); doIt(); }
+      else if(attempts>50) clearInterval(iv);
     },200);
   }
 }
 
 window.MathJax={
   tex:{
-    inlineMath:[["$","$"]],
-    displayMath:[["$$","$$"]],
+    inlineMath:[["$","$"],["\\(","\\)"]],
+    displayMath:[["$$","$$"],["\\[","\\]"]],
     processEscapes:true,
-    packages:{"[+]":["ams"]}
+    processEnvironments:true,
+    packages:{"[+]":["ams","boldsymbol"]}
   },
-  options:{skipHtmlTags:["script","noscript","style","textarea","pre","code"]},
-  startup:{ready(){MathJax.startup.defaultReady();window._mathJaxReady=true;}}
+  options:{
+    skipHtmlTags:["script","noscript","style","textarea","pre","code"],
+    processHtmlClass:"formula-render|math-inline"
+  },
+  startup:{
+    typeset:false,
+    ready(){
+      MathJax.startup.defaultReady();
+      window._mathJaxReady=true;
+    }
+  }
 };
 
 
@@ -992,7 +1010,7 @@ async function askSimplify(sectionId){
     });
     const d = await r.json();
     document.getElementById(loaderId)?.remove();
-    if(d.error){ thread.innerHTML += `<div class="simplify-msg" style="color:red;">${esc(d.error)}</div>`; return; }
+    if(d.error){ thread.innerHTML += `<div class="simplify-msg" style="color:red;font-size:12px;">${esc(d.error)}</div>`; return; }
 
     state.history.push({ role: "assistant", content: d.reply });
     thread.innerHTML += `<div class="simplify-msg">${d.reply.replace(/\n/g,"<br>")}</div>`;
