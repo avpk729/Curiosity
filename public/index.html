@@ -116,7 +116,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 /* ── Formula ── */
 .formula-card{margin:14px 0;background:var(--bg2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:12px 18px;overflow-x:auto;}
 .formula-card-label{font-size:10px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;}
-.formula-card-body{font-size:15px;color:var(--text);line-height:1.8;}
+.formula-card-body{font-size:15px;color:var(--text);line-height:1.8;min-height:1.8em;overflow-x:auto;}
 
 /* ── Visuals ── */
 .image-strip{display:flex;gap:10px;margin:14px 0;flex-wrap:wrap;}
@@ -882,14 +882,48 @@ function typesetMath(el){
   if(!el)return;
   const doIt=()=>{
     if(!window.MathJax||!window.MathJax.typesetPromise)return;
-    el.querySelectorAll(".formula-render[data-latex]").forEach(card=>{if(!card.dataset.populated){card.textContent="";card.appendChild(document.createTextNode("\\["+card.dataset.latex+"\\]"));card.dataset.populated="1";}});
-    el.querySelectorAll(".math-inline[data-tex]").forEach(span=>{if(!span.dataset.populated){span.textContent="";span.appendChild(document.createTextNode("\\("+span.dataset.tex+"\\)"));span.dataset.populated="1";}});
-    window.MathJax.typesetClear([el]);window.MathJax.typesetPromise([el]).catch(()=>{});
+    // Inject LaTeX text into placeholder elements (use $$ delimiters — matches MathJax config)
+    el.querySelectorAll(".formula-render[data-latex]").forEach(card=>{
+      if(!card.dataset.populated){
+        card.textContent="$$"+card.dataset.latex+"$$";
+        card.dataset.populated="1";
+      }
+    });
+    el.querySelectorAll(".math-inline[data-tex]").forEach(span=>{
+      if(!span.dataset.populated){
+        span.textContent="$"+span.dataset.tex+"$";
+        span.dataset.populated="1";
+      }
+    });
+    // Only set populated AFTER a successful typeset
+    window.MathJax.typesetClear([el]);
+    window.MathJax.typesetPromise([el]).catch(err=>{
+      // On failure reset populated flags so next render can retry
+      el.querySelectorAll(".formula-render[data-populated],.math-inline[data-populated]")
+        .forEach(n=>delete n.dataset.populated);
+    });
   };
-  if(window._mathJaxReady)doIt();else{const iv=setInterval(()=>{if(window._mathJaxReady){clearInterval(iv);doIt();}},200);}
+  if(window._mathJaxReady)doIt();
+  else{
+    let attempts=0;
+    const iv=setInterval(()=>{
+      attempts++;
+      if(window._mathJaxReady){clearInterval(iv);doIt();}
+      else if(attempts>50)clearInterval(iv); // give up after 10s
+    },200);
+  }
 }
 
-window.MathJax={tex:{inlineMath:[["$","$"]],displayMath:[["$$","$$"]],processEscapes:true},options:{skipHtmlTags:["script","noscript","style","textarea","pre"]},startup:{ready(){MathJax.startup.defaultReady();window._mathJaxReady=true;}}};
+window.MathJax={
+  tex:{
+    inlineMath:[["$","$"]],
+    displayMath:[["$$","$$"]],
+    processEscapes:true,
+    packages:{"[+]":["ams"]}
+  },
+  options:{skipHtmlTags:["script","noscript","style","textarea","pre","code"]},
+  startup:{ready(){MathJax.startup.defaultReady();window._mathJaxReady=true;}}
+};
 
 
 // ── Simplify interaction ──────────────────────────────
