@@ -15,6 +15,15 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // ── DB ────────────────────────────────────────────────
 const db = new Database(DB_PATH);
+
+// Performance & durability tuning for Railway persistent volume
+db.pragma("journal_mode = WAL");       // concurrent reads while writing
+db.pragma("synchronous = NORMAL");     // safe on Railway (fsync on checkpoint)
+db.pragma("cache_size = -64000");      // 64 MB in-memory page cache
+db.pragma("temp_store = MEMORY");      // temp tables in RAM
+db.pragma("mmap_size = 268435456");    // 256 MB memory-mapped I/O
+db.pragma("wal_autocheckpoint = 1000");// checkpoint every 1000 pages
+
 db.exec(`
   CREATE TABLE IF NOT EXISTS topics (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,7 +35,19 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     topic_lower TEXT NOT NULL, branch TEXT, level TEXT NOT NULL,
     content TEXT NOT NULL, branches TEXT, citations TEXT, visuals TEXT,
+    source TEXT DEFAULT 'user',
     created_at INTEGER, UNIQUE(topic_lower, branch, level)
+  );
+  CREATE TABLE IF NOT EXISTS image_cache (
+    query TEXT PRIMARY KEY,
+    images_json TEXT NOT NULL,
+    fetched_at INTEGER NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS simplify_cache (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cache_key TEXT NOT NULL UNIQUE,
+    reply TEXT NOT NULL,
+    created_at INTEGER NOT NULL
   );
   CREATE TABLE IF NOT EXISTS page_views (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,10 +56,14 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_pv_created ON page_views(created_at);
   CREATE INDEX IF NOT EXISTS idx_pv_topic ON page_views(topic);
+  CREATE INDEX IF NOT EXISTS idx_exp_lookup ON explanations(topic_lower, branch, level);
+  CREATE INDEX IF NOT EXISTS idx_img_cache ON image_cache(query);
+  CREATE INDEX IF NOT EXISTS idx_simplify_key ON simplify_cache(cache_key);
 `);
 
 const ecols = db.prepare("PRAGMA table_info(explanations)").all().map(c=>c.name);
 if(!ecols.includes("visuals")) try{db.exec("ALTER TABLE explanations ADD COLUMN visuals TEXT");}catch(e){}
+if(!ecols.includes("source")) try{db.exec("ALTER TABLE explanations ADD COLUMN source TEXT DEFAULT 'user'");}catch(e){}
 if(!CLAUDE_API_KEY) console.error("⚠️  CLAUDE_API_KEY not set!");
 
 // ── Constants ─────────────────────────────────────────
@@ -152,7 +177,7 @@ app.post("/api/explore", async (req, res) => {
       const visuals = {};
       if (flowchart) { visuals.flowchart=flowchart.nodes; visuals.flowchartTitle=flowchart.title; }
       if (conceptMap) { visuals.conceptMap=conceptMap.nodes; visuals.conceptMapTitle=conceptMap.title; }
-      db.prepare(`INSERT OR REPLACE INTO explanations (topic_lower,branch,level,content,branches,citations,visuals,created_at) VALUES (?,?,?,?,?,?,?,?)`)
+      db.prepare(`INSERT OR REPLACE INTO explanations (topic_lower,branch,level,content,branches,citations,visuals,source,created_at) VALUES (?,?,?,?,?,?,?,'user',?)`)
         .run(topicLower,branchKey,lvl,content,JSON.stringify(branches),JSON.stringify(bibliography),JSON.stringify(visuals),Date.now());
       result = { content, branches, bibliography, ...visuals };
     } catch(err) {
@@ -185,6 +210,17 @@ app.post("/api/simplify", async (req, res) => {
 
   const contextHistory = (history || []).map(m => ({ role: m.role, content: m.content }));
 
+  // Cache only cacheable first-turn requests (no prior history, no custom questions)
+  const isCacheable = contextHistory.length === 0 && gapType !== "custom" && !userQuestion;
+  const cacheKey = isCacheable
+    ? `${(topic||"").toLowerCase()}||${(branch||"").toLowerCase()}||${level}||${sectionHeading}||${gapType}`
+    : null;
+
+  if (cacheKey) {
+    const cached = getSimplifyCache(cacheKey);
+    if (cached) return res.json({ reply: cached, cached: true });
+  }
+
   const systemPrompt = `You are a brilliant, concise academic tutor. The student is reading a ${levelLabel}-level explanation of "${branch || topic}" and has stopped at the section: "${sectionHeading}". They need clarification on ${gapDesc}. Keep your reply SHORT — 3-5 sentences max. Be concrete, use analogies if helpful. No new jargon unless you immediately explain it. Write in flowing prose, no bullet points. End with one natural follow-up question.`;
 
   const messages = contextHistory.length > 0
@@ -200,6 +236,7 @@ app.post("/api/simplify", async (req, res) => {
     const data = await response.json();
     if (data.error) throw new Error(data.error.message);
     const text = data.content?.map(b => b.text || "").join("") || "";
+    if (cacheKey && text) setSimplifyCache(cacheKey, text);
     res.json({ reply: text });
   } catch (err) {
     console.error("Simplify error:", err.message);
@@ -207,6 +244,78 @@ app.post("/api/simplify", async (req, res) => {
   }
 });
 
+
+// ── Image cache endpoint ──────────────────────────────
+const IMAGE_CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+const WIKI_API = "https://en.wikipedia.org/w/api.php";
+
+app.get("/api/images", async (req, res) => {
+  const query = (req.query.q || "").trim().slice(0, 200);
+  if (!query) return res.json({ images: [] });
+
+  // 1. Check DB cache (valid for 30 days)
+  try {
+    const cached = db.prepare("SELECT images_json, fetched_at FROM image_cache WHERE query=?").get(query);
+    if (cached && (Date.now() - cached.fetched_at) < IMAGE_CACHE_TTL) {
+      return res.json({ images: JSON.parse(cached.images_json), cached: true });
+    }
+  } catch(e) {}
+
+  // 2. Fetch from Wikipedia
+  try {
+    const sr = await fetch(`${WIKI_API}?action=query&list=search&srsearch=${encodeURIComponent(query)}&srlimit=2&format=json&origin=*`);
+    const sd = await sr.json();
+    const pages = sd.query?.search;
+    if (!pages?.length) { db.prepare("INSERT OR REPLACE INTO image_cache (query,images_json,fetched_at) VALUES (?,?,?)").run(query,"[]",Date.now()); return res.json({images:[]}); }
+
+    const topTitle = pages[0].title.toLowerCase();
+    const qWords = query.toLowerCase().split(/\s+/).filter(w=>w.length>3);
+    if (!qWords.some(w=>topTitle.includes(w))) { db.prepare("INSERT OR REPLACE INTO image_cache (query,images_json,fetched_at) VALUES (?,?,?)").run(query,"[]",Date.now()); return res.json({images:[]}); }
+
+    const ir = await fetch(`${WIKI_API}?action=query&titles=${encodeURIComponent(pages[0].title)}&prop=images&imlimit=12&format=json&origin=*`);
+    const id = await ir.json();
+    const pd = Object.values(id.query?.pages||{})[0];
+    const imgTitles = ((pd?.images)||[]).filter(i=>{
+      const n = i.title.toLowerCase();
+      return /\.(jpg|jpeg|png)$/i.test(i.title) && !/icon|logo|flag|map|symbol|seal|coat|signature|arrow|button|blank|commons|wiki|portal|portrait|aircraft|airplane|boeing|airbus/i.test(n);
+    }).slice(0,6);
+
+    if (!imgTitles.length) { db.prepare("INSERT OR REPLACE INTO image_cache (query,images_json,fetched_at) VALUES (?,?,?)").run(query,"[]",Date.now()); return res.json({images:[]}); }
+
+    const titles = imgTitles.map(i=>i.title).join("|");
+    const inr = await fetch(`${WIKI_API}?action=query&titles=${encodeURIComponent(titles)}&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=400&format=json&origin=*`);
+    const ind = await inr.json();
+    const imgs = Object.values(ind.query?.pages||{}).map(p=>{
+      const info = p.imageinfo?.[0]; if (!info?.url) return null;
+      const cap = ((info.extmetadata?.ImageDescription?.value)||"").replace(/<[^>]*>/g,"").slice(0,120);
+      return { src: info.url, caption: cap || (p.title||"").replace("File:","").replace(/\.[^.]+$/,"") };
+    }).filter(Boolean).slice(0,4);
+
+    // Store in DB cache
+    db.prepare("INSERT OR REPLACE INTO image_cache (query,images_json,fetched_at) VALUES (?,?,?)").run(query, JSON.stringify(imgs), Date.now());
+    res.json({ images: imgs, cached: false });
+  } catch(e) {
+    console.error("Image fetch error:", e.message);
+    res.json({ images: [] });
+  }
+});
+
+// ── Simplify cache helper ─────────────────────────────
+const SIMPLIFY_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+function getSimplifyCache(key) {
+  try {
+    const row = db.prepare("SELECT reply, created_at FROM simplify_cache WHERE cache_key=?").get(key);
+    if (row && (Date.now() - row.created_at) < SIMPLIFY_CACHE_TTL) return row.reply;
+  } catch(e) {}
+  return null;
+}
+
+function setSimplifyCache(key, reply) {
+  try {
+    db.prepare("INSERT OR REPLACE INTO simplify_cache (cache_key,reply,created_at) VALUES (?,?,?)").run(key, reply, Date.now());
+  } catch(e) {}
+}
 
 // ── Repository ────────────────────────────────────────
 app.get("/api/repository", (req, res) => {
@@ -217,6 +326,21 @@ app.get("/api/repository", (req, res) => {
     return {...t, branches};
   });
   res.json({ topics:withBranches });
+});
+
+// ── Cache stats ───────────────────────────────────────
+app.get("/api/cache-stats", (req, res) => {
+  try {
+    const explanations = db.prepare("SELECT COUNT(*) as n FROM explanations").get().n;
+    const seeded = db.prepare("SELECT COUNT(*) as n FROM explanations WHERE source='seeded'").get().n;
+    const userGen = db.prepare("SELECT COUNT(*) as n FROM explanations WHERE source='user'").get().n;
+    const images = db.prepare("SELECT COUNT(*) as n FROM image_cache").get().n;
+    const simplify = db.prepare("SELECT COUNT(*) as n FROM simplify_cache").get().n;
+    const imgFresh = db.prepare("SELECT COUNT(*) as n FROM image_cache WHERE fetched_at>?").get(Date.now() - IMAGE_CACHE_TTL).n;
+    res.json({ explanations, seeded, user_generated: userGen, image_cache: images, image_cache_fresh: imgFresh, simplify_cache: simplify });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // ── Analytics ─────────────────────────────────────────
@@ -377,7 +501,7 @@ async function runSeedJob(){
       if(flowchart){visuals.flowchart=flowchart.nodes;visuals.flowchartTitle=flowchart.title;}
       if(conceptMap){visuals.conceptMap=conceptMap.nodes;visuals.conceptMapTitle=conceptMap.title;}
 
-      db.prepare(`INSERT OR REPLACE INTO explanations (topic_lower,branch,level,content,branches,citations,visuals,created_at) VALUES (?,?,?,?,?,?,?,?)`)
+      db.prepare(`INSERT OR REPLACE INTO explanations (topic_lower,branch,level,content,branches,citations,visuals,source,created_at) VALUES (?,?,?,?,?,?,?,'seeded',?)`)
         .run(item.topic.toLowerCase(),item.branch,item.level,content,JSON.stringify(branches),JSON.stringify(bibliography),JSON.stringify(visuals),Date.now());
 
       // Track topic in topics table
