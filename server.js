@@ -156,7 +156,7 @@ app.post("/api/explore", async (req, res) => {
       const response = await fetch("https://api.anthropic.com/v1/messages", {
         method:"POST",
         headers:{"Content-Type":"application/json","x-api-key":CLAUDE_API_KEY,"anthropic-version":"2023-06-01"},
-        body: JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:2400, system:SYSTEM_PROMPT, messages:[{role:"user",content:buildPrompt(topicClean,lvl,branchKey,prevContent)}] })
+        body: JSON.stringify({ model:"claude-sonnet-4-6", max_tokens:2400, system:SYSTEM_PROMPT, messages:[{role:"user",content:buildPrompt(topicClean,lvl,branchKey,prevContent)}] })
       });
       const data = await response.json();
       if (data.error) throw new Error(data.error.message);
@@ -231,7 +231,7 @@ app.post("/api/simplify", async (req, res) => {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": CLAUDE_API_KEY, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 400, system: systemPrompt, messages })
+      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 400, system: systemPrompt, messages })
     });
     const data = await response.json();
     if (data.error) throw new Error(data.error.message);
@@ -484,7 +484,7 @@ async function runSeedJob(){
       const response = await fetch("https://api.anthropic.com/v1/messages",{
         method:"POST",
         headers:{"Content-Type":"application/json","x-api-key":CLAUDE_API_KEY,"anthropic-version":"2023-06-01"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2400,system:SYSTEM_PROMPT,messages:[{role:"user",content:buildPrompt(item.topic,item.level,item.branch,prevContent)}]})
+        body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:2400,system:SYSTEM_PROMPT,messages:[{role:"user",content:buildPrompt(item.topic,item.level,item.branch,prevContent)}]})
       });
       const data = await response.json();
       if(data.error) throw new Error(data.error.message);
