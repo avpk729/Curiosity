@@ -11,6 +11,13 @@ const ANALYTICS_SECRET = process.env.ANALYTICS_SECRET || "change-me-in-railway-e
 const DB_PATH = process.env.DB_PATH || "/app/data/curiosity.db";
 
 app.use(express.json());
+app.use((req, res, next) => {
+  if (req.path === "/" || req.path.endsWith(".html")) {
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+  }
+  next();
+});
 app.use(express.static(path.join(__dirname, "public")));
 
 // ── DB ────────────────────────────────────────────────
@@ -240,7 +247,7 @@ app.post("/api/simplify", async (req, res) => {
     res.json({ reply: text });
   } catch (err) {
     console.error("Simplify error:", err.message);
-    res.status(500).json({ error: "Failed to simplify. Please try again." });
+    res.status(500).json({ error: `Simplify failed: ${err.message}` });
   }
 });
 
