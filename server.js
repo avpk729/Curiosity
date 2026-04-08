@@ -43,25 +43,30 @@ if(!CLAUDE_API_KEY) console.error("⚠️  CLAUDE_API_KEY not set!");
 
 // ── Constants ─────────────────────────────────────────
 const LEVELS = ["grade5","college","masters","phd"];
-const LEVEL_LABELS = {grade5:"5th Grade",college:"College",masters:"Master's",phd:"PhD"};
+const LEVEL_LABELS = {grade5:"Overview",college:"Undergraduate",masters:"Graduate",phd:"PhD"};
 
 const LEVEL_INSTRUCTIONS = {
-  grade5:`You are a warm, brilliant teacher giving someone their very first encounter with this topic. Use simple words and vivid everyday analogies. Keep sentences short and friendly. No unexplained jargon.
+  grade5:`You are writing an accessible introduction to this topic for an intelligent reader who is new to it. Do NOT write for a child — write for a curious, intelligent adult or student encountering this subject for the first time. Assume they are smart; they just haven't studied this yet. Use clear language, concrete examples, and good analogies, but do not oversimplify or be patronising.
 
 CRITICAL STRUCTURE — you MUST follow this exactly:
 
-Step 1: Write an overview signpost paragraph wrapped in this tag:
-[OVERVIEW: Your 3-5 sentence overview here. This must name every section heading you will cover, written so it remains meaningful even when the reader later encounters graduate and PhD level treatments of the same sections.]
+Step 1: Before writing anything else, think through:
+- What are the 3-5 most important conceptual threads in this topic?
+- What is the most logical order to present them — chronological, process-sequential, cause-effect, or thematic?
+- What will a reader understand after reading this that they didn't before?
 
-Step 2: Write 3-5 thematic sections, each starting with:
+Step 2: Write an overview signpost paragraph wrapped in this tag:
+[OVERVIEW: Your 3-5 sentence overview here. Name every section you will cover and explain why that order makes sense. Write as a confident guide, not a teaser. This overview should remain meaningful and accurate even when the reader later encounters graduate and doctoral treatments of the same sections.]
+
+Step 3: Write 3-5 thematic sections, each starting with:
 [HEADING: Section Title Here]
-Then flowing narrative prose for that section.
+Then clear, flowing narrative prose for that section. No bullet points. No markdown.
 
 The [OVERVIEW:] tag MUST appear before any [HEADING:] tag. Do not skip it.
 
-When you mention a concept that naturally leads somewhere more advanced, mark it: [DEEPER: concept name]. Use sparingly — 2-3 per explanation maximum.
+When you mention a concept worth exploring further, mark it: [DEEPER: concept name]. Use sparingly — 2-3 maximum.
 
-At the end of each section (just before the next [HEADING:] tag), add a single signpost sentence bridging to the next section. Mark it: [SIGNPOST: your bridging sentence here]. Keep it one sentence, conversational.`,
+At the end of each section (just before the next [HEADING:] tag), add one sentence bridging to the next section. Mark it: [SIGNPOST: your bridging sentence here].`,
 
   college:`You are explaining a specific section of a topic at undergraduate level. The student has just read the 5th-grade explanation of this section and clicked "Dig Deeper". Begin with 1-2 sentences of context bridging from the accessible version they just read, then introduce proper terminology, mechanisms, and real-world applications with clear precision.
 
@@ -141,7 +146,7 @@ Branches: 4 genuinely interesting subtopics (2-5 words). Bibliography: real veri
 
 function buildSectionPrompt(topic, sectionHeading, level, prevLevelContent) {
   const instruction = LEVEL_INSTRUCTIONS[level];
-  const LEVEL_LABELS_LOCAL = {grade5:"5th Grade",college:"Undergraduate",masters:"Graduate (Master's)",phd:"Doctoral (PhD)"};
+  const LEVEL_LABELS_LOCAL = {grade5:"Overview",college:"Undergraduate",masters:"Graduate (Master's)",phd:"Doctoral (PhD)"};
   const prevCtx = prevLevelContent
     ? `\n\nThe reader has already read the previous level's explanation of this section. Here is what they read:\n---\n${prevLevelContent.slice(0,1200)}\n---\nBuild on this — don't repeat it, elevate it.\n`
     : "";
