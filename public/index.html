@@ -431,15 +431,15 @@ function findBestTreeMatch(query){
 function guessBestSubject(query){
   const q = query.toLowerCase();
   const keywords = {
-    "Information & Computing":["internet","network","computer","software","data","algorithm","code","programming","web","digital","cyber","ai","machine","database"],
-    "Sciences & Engineering":["physics","chemistry","biology","engineering","math","calculus","science","climate","energy","atom"],
-    "Maritime & Logistics":["ship","vessel","port","maritime","sea","ocean","cargo","fleet","navigation"],
-    "Health & Medicine":["medical","health","disease","drug","anatomy","clinical","patient","hospital","therapy"],
-    "Business & Economics":["business","economy","market","finance","trade","investment","management","strategy"],
-    "Arts, Law & Education":["law","legal","education","philosophy","history","society","art","culture"],
-    "Research & Methods":["research","method","analysis","study","data","statistics","methodology"]
+    "Sciences & Engineering":["physics","chemistry","biology","engineering","math","calculus","science","climate","energy","atom","nuclear","reactor","quantum","electron","proton","neutron","fusion","fission","force","thermodynamic","electric","magnetic","optical","laser","semiconductor","material","chemical","molecule","compound","reaction","element","periodic","wave","radiation","heat","pressure","fluid","mechanical","civil","structural","aerospace","geological","soil","concrete","bridge","circuit","signal","frequency","spectrum","telescope","satellite","rocket","propulsion","gravity","relativity","particle","plasma","superconductor","polymer","crystal","alloy","enzyme","protein","cell","gene","dna","rna","evolution","ecology","photosynthesis","bacteria","virus","vaccine","antibiotic"],
+    "Information & Computing":["internet","network","computer","software","data","algorithm","code","programming","web","digital","cyber","ai","machine","database","hardware","operating system","cloud","encryption","protocol","bandwidth","latency","compiler","syntax","runtime","memory","processor","gpu","api","framework","library","recursion","sorting","graph","tree","neural","deep learning","nlp","computer vision"],
+    "Maritime & Logistics":["ship","vessel","port","maritime","sea","ocean","cargo","fleet","navigation","hull","propulsion","stability","ballast","draught","tonnage","container","freight","logistics","harbour","dock","tide","wave","buoy","lighthouse","anchor","rudder"],
+    "Health & Medicine":["medical","health","disease","drug","anatomy","clinical","patient","hospital","therapy","diagnosis","surgery","pharmaceutical","epidemic","pandemic","symptom","treatment","vaccine","cancer","diabetes","heart","brain","lung","liver","kidney","blood","immune","neurological","psychiatric","mental health"],
+    "Business & Economics":["business","economy","market","finance","trade","investment","management","strategy","profit","revenue","supply","demand","inflation","gdp","monetary","fiscal","banking","accounting","audit","tax","corporation","startup","entrepreneurship","marketing","brand","consumer","labour","wage","unemployment"],
+    "Arts, Law & Education":["law","legal","education","philosophy","history","society","art","culture","literature","language","ethics","politics","democracy","constitution","crime","justice","rights","religion","anthropology","archaeology","linguistics","media","journalism","film","music","poetry","theatre"],
+    "Research & Methods":["research","method","analysis","study","statistics","methodology","hypothesis","experiment","survey","qualitative","quantitative","regression","model","inference","sampling","bias","validity","reliability","meta-analysis","systematic review"]
   };
-  let best="Information & Computing", bestScore=0;
+  let best="Sciences & Engineering", bestScore=0;
   for(const [subj, words] of Object.entries(keywords)){
     const score = words.filter(w=>q.includes(w)).length;
     if(score>bestScore){bestScore=score;best=subj;}
@@ -891,12 +891,18 @@ function renderParagraph(text,lvl){
 }
 
 function parseSections(text){
-  // Extract overview signpost
+  // Extract explicit [OVERVIEW: ...] block
   let overview=null;
   let remaining=text.replace(/\[OVERVIEW:\s*([\s\S]*?)\]/,(_, o)=>{overview=o.trim();return"";}).trim();
 
   const parts=remaining.split(/\[HEADING:\s*(.*?)\]/);
   const sections=[];
+
+  // If there's content before the first [HEADING:], treat it as the overview (fallback)
+  if(!overview && parts[0] && parts[0].trim().length > 40){
+    overview = parts[0].trim();
+  }
+
   for(let i=1;i<parts.length;i+=2){
     const heading=parts[i].trim();
     let content=(parts[i+1]||"").trim();
