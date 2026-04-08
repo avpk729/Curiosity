@@ -48,9 +48,16 @@ const LEVEL_LABELS = {grade5:"5th Grade",college:"College",masters:"Master's",ph
 const LEVEL_INSTRUCTIONS = {
   grade5:`You are a warm, brilliant teacher giving someone their very first encounter with this topic. Use simple words and vivid everyday analogies. Keep sentences short and friendly. No unexplained jargon.
 
-IMPORTANT: Begin the entire explanation with an overview signpost paragraph. Mark it: [OVERVIEW: your overview text here]. This overview must be 3-5 sentences long and do two things: (1) briefly explain what this topic is about in plain language, and (2) preview every section that follows by name — written in a way that will remain meaningful and accurate even when the reader later encounters the undergraduate, graduate, and doctoral treatments of the same sections. The overview should feel like a confident signpost, not a teaser.
+CRITICAL STRUCTURE — you MUST follow this exactly:
 
-After the overview, write 3-5 thematic sections, each starting with [HEADING: Section Title Here].
+Step 1: Write an overview signpost paragraph wrapped in this tag:
+[OVERVIEW: Your 3-5 sentence overview here. This must name every section heading you will cover, written so it remains meaningful even when the reader later encounters graduate and PhD level treatments of the same sections.]
+
+Step 2: Write 3-5 thematic sections, each starting with:
+[HEADING: Section Title Here]
+Then flowing narrative prose for that section.
+
+The [OVERVIEW:] tag MUST appear before any [HEADING:] tag. Do not skip it.
 
 When you mention a concept that naturally leads somewhere more advanced, mark it: [DEEPER: concept name]. Use sparingly — 2-3 per explanation maximum.
 
@@ -75,13 +82,32 @@ Mark key prerequisites: [PREREQ: concept name]. Do NOT use [DEEPER] — this is 
 Write 4-6 paragraphs. No signpost needed at the end — this is the deepest level.`
 };
 
-const SYSTEM_PROMPT = `You are Curiosity Wikipedia — an elegant, progressive academic knowledge engine. You only explain legitimate academic topics. Refuse NSFW or non-academic requests politely.
+const SYSTEM_PROMPT = `You are Curiosity Wikipedia — an elegant, progressive academic knowledge engine designed for school students, university students, and academic scholars.
 
+CONTENT POLICY — strictly enforced:
+- You ONLY explain legitimate academic, scientific, historical, or professional topics.
+- You REFUSE any request involving: sexual content, pornography, violence, weapons manufacturing, drug synthesis, self-harm, hacking/malware, hate speech, or any content inappropriate for a school or university setting.
+- If a topic is not a genuine academic subject, respond ONLY with: "This topic is not available in Curiosity Wikipedia. Please search for an academic subject."
+- Do NOT produce any content that could harm, embarrass, or be inappropriate for students of any age.
+
+FORMATTING:
 Write in narrative flowing prose grouped under clear thematic section headings. NEVER use markdown symbols like **, ##, *, or bullet points. Everything is beautiful flowing prose.
-
 Structure every explanation as 3-5 thematic sections, each starting with [HEADING: Section Title Here].
-
 Always cite real, verifiable academic sources inline as [1], [2] etc. and include a bibliography.`;
+
+// Server-side topic blocklist — these queries are rejected before hitting Claude
+const BLOCKED_TERMS = [
+  "porn","pornography","xxx","sex tape","nude","naked","nsfw","hentai","erotic",
+  "how to make bomb","bomb making","drug synthesis","meth recipe","cocaine synthesis",
+  "self harm","suicide method","how to kill","snuff","gore","beheading",
+  "child abuse","csam","paedophil","pedophil",
+  "hack into","malware","ransomware","exploit code","sql injection tutorial"
+];
+
+function isBlockedTopic(topic){
+  const t = (topic||"").toLowerCase();
+  return BLOCKED_TERMS.some(term => t.includes(term));
+}
 
 function buildPrompt(topic, level, branch, prevContent) {
   const instruction = LEVEL_INSTRUCTIONS[level];
@@ -148,6 +174,8 @@ app.post("/api/explore", async (req, res) => {
   const { topic, branch, category, level, prevContent } = req.body;
   if (!topic || typeof topic !== "string" || topic.trim().length < 2)
     return res.status(400).json({ error: "Invalid topic" });
+  if (isBlockedTopic(topic) || isBlockedTopic(branch))
+    return res.status(400).json({ error: "This topic is not available in Curiosity Wikipedia. Please search for an academic subject." });
 
   const topicClean = topic.trim();
   const topicLower = topicClean.toLowerCase();
@@ -208,6 +236,8 @@ app.post("/api/explore-section", async (req, res) => {
   const { topic, sectionHeading, level, prevLevelContent } = req.body;
   if (!topic || !sectionHeading || !level)
     return res.status(400).json({ error: "Missing required fields" });
+  if (isBlockedTopic(topic) || isBlockedTopic(sectionHeading))
+    return res.status(400).json({ error: "This topic is not available in Curiosity Wikipedia. Please search for an academic subject." });
 
   const topicLower = topic.trim().toLowerCase();
   const lvl = level;
@@ -385,22 +415,16 @@ function buildSeedQueue(){
     "Maritime & Logistics":{"Ship Stability":["Hydrostatics & Buoyancy","Metacentric Height (GM)","Free Surface Effect","Stability at Large Angles","Damage Stability","Dynamic Stability","Trim & Draught","Intact Stability Criteria","Loading Conditions","Grain Stability","Probabilistic Damage Stability","IMO Stability Regulations"],"Naval Architecture":["Hull Form Design","Resistance & Propulsion","Powering & Speed","Manoeuvrability","Seakeeping","Structural Design","Lightweight & Deadweight","Ship Types & Proportions","Computational Fluid Dynamics","Finite Element Analysis","Hydrodynamic Optimisation","Sustainable Ship Design"],"Port Operations Management":["Port Planning & Layout","Terminal Operations","Cargo Handling Equipment","Container Terminal Systems","Port Productivity Metrics","Gate & Yard Operations","Port Community Systems","Digitalisation in Ports","Port Safety Management","Environmental Port Management","Port Economics","Automated Terminals"],"Maritime Law":["SOLAS Convention","MARPOL Convention","UNCLOS","Bills of Lading","Charterparties","Marine Insurance","Collision Regulations (COLREGs)","Salvage & Towage","Flag State Control","Port State Control","Maritime Labour Convention (MLC)","Liability & Limitation"],"Shipping Logistics":["Container Shipping","Bulk Shipping","Tanker Operations","Freight Markets","Liner Shipping Networks","Slot Allocation","Intermodal Transport","Hinterland Connectivity","Digital Freight Platforms","Supply Chain Resilience","Decarbonisation in Shipping","Arctic Shipping Routes"],"Maritime Safety":["ISM Code","Risk Assessment at Sea","STCW Competencies","Bridge Resource Management","Emergency Procedures","Search & Rescue","Fire Safety at Sea","GMDSS","Maritime Accident Investigation","Human Factors at Sea","Cyber Security at Sea"]},
     "Sciences & Engineering":{"Calculus & Analysis":["Limits & Continuity","Differentiation","Integration","Multivariable Calculus","Vector Calculus","Differential Equations","Series & Convergence","Complex Analysis","Fourier Analysis","Real Analysis","Functional Analysis"],"Statistics & Probability":["Probability Theory","Random Variables","Distributions","Hypothesis Testing","Regression Analysis","Bayesian Inference","Multivariate Statistics","Time Series Analysis","Stochastic Processes","Causal Inference","Statistical Learning Theory"],"Climate Science":["Atmospheric Physics","Ocean-Atmosphere Interaction","Climate Modelling","Radiative Forcing","Ice & Cryosphere","Climate Projections","Extreme Weather Events","Sea Level Rise","Carbon Budgets","Climate Attribution","Mitigation Strategies"]},
     "Health & Medicine":{"Immunology":["Innate Immunity","Adaptive Immunity","Antibody Structure & Function","T-Cell Biology","B-Cell Biology","MHC & Antigen Presentation","Inflammation","Autoimmunity","Immunodeficiency","Transplant Immunology","Cancer Immunology","Vaccine Immunology"],"Epidemiology":["Disease Surveillance","Study Designs","Measures of Association","Bias & Confounding","Cohort Studies","Case-Control Studies","Randomised Controlled Trials","Systematic Reviews & Meta-Analysis","Infectious Disease Epidemiology","Social Determinants of Health","Global Health"],"Pharmacology":["Pharmacokinetics","Pharmacodynamics","Drug-Receptor Interactions","Autonomic Pharmacology","Cardiovascular Drugs","CNS Pharmacology","Antimicrobials","Cancer Pharmacology","Drug Metabolism & Toxicity","Clinical Pharmacology","Pharmacogenomics","Drug Development"]},
-    "Research & Methods":{"Research Design":["Ontology & Epistemology","Research Paradigms","Qualitative vs Quantitative","Mixed Methods","Case Study Design","Survey Design","Experimental Design","Longitudinal Studies","Action Research","Grounded Theory","Systematic Review Protocol","Research Ethics"],"Quantitative Methods":["Descriptive Statistics","Inferential Statistics","Regression Analysis","ANOVA","Structural Equation Modelling","Panel Data Methods","Difference-in-Differences","Instrumental Variables","Bayesian Methods","Simulation Methods","Machine Learning in Research"],"DEA & Productivity Analysis":["Data Envelopment Analysis (DEA)","Input & Output Orientation","Efficiency Scores","Malmquist TFP Index","Stochastic Frontier Analysis","Luenberger Productivity","Two-Stage DEA","Network DEA","Bootstrap in DEA","DEA in Port Studies","TFP Decomposition","Productivity & Policy"],"Econometrics":["OLS Regression","Heteroskedasticity","Autocorrelation","Endogeneity","Panel Data (Fixed & Random Effects)","IV & 2SLS","Time Series Econometrics","VAR Models","Cointegration","Difference-in-Differences","Regression Discontinuity","Causal Econometrics"]},
-    "AMSA & STCW Certification":{"Navigational Watchkeeping":["Keeping a Safe Watch","Lookout & Collision Avoidance","Radar & ARPA Operation","ECDIS Navigation","Chart Work & Position Fixing","Celestial Navigation","Passage Planning","Bridge Resource Management","Night Operations","Restricted Visibility"],"ISM Code":["Safety Management System","Company Responsibilities","Master's Authority","Risk Assessment","Emergency Preparedness","Non-Conformities & Accidents","Internal Audits","ISM Certification (DOC & SMC)","ISM & Human Factors","ISM Implementation"],"MARPOL":["Annex I — Oil Pollution","Annex II — Noxious Liquids","Annex V — Garbage","Annex VI — Air Pollution","EEDI & SEEMP","Ballast Water Convention","Special Areas","Environmental Compliance"],"COLREGs":["Rule 5 — Lookout","Rule 6 — Safe Speed","Rule 7 & 8 — Risk & Action","Lights & Shapes","Sound & Light Signals","Narrow Channels","Traffic Separation Schemes","Crossing & Overtaking","Give-Way & Stand-On"]}
+    "Research & Methods":{"Research Design":["Ontology & Epistemology","Research Paradigms","Qualitative vs Quantitative","Mixed Methods","Case Study Design","Survey Design","Experimental Design","Longitudinal Studies","Action Research","Grounded Theory","Systematic Review Protocol","Research Ethics"],"Quantitative Methods":["Descriptive Statistics","Inferential Statistics","Regression Analysis","ANOVA","Structural Equation Modelling","Panel Data Methods","Difference-in-Differences","Instrumental Variables","Bayesian Methods","Simulation Methods","Machine Learning in Research"],"DEA & Productivity Analysis":["Data Envelopment Analysis (DEA)","Input & Output Orientation","Efficiency Scores","Malmquist TFP Index","Stochastic Frontier Analysis","Luenberger Productivity","Two-Stage DEA","Network DEA","Bootstrap in DEA","DEA in Port Studies","TFP Decomposition","Productivity & Policy"],"Econometrics":["OLS Regression","Heteroskedasticity","Autocorrelation","Endogeneity","Panel Data (Fixed & Random Effects)","IV & 2SLS","Time Series Econometrics","VAR Models","Cointegration","Difference-in-Differences","Regression Discontinuity","Causal Econometrics"]}
   };
 
   const queue = [];
   for(const [subject, topics] of Object.entries(TREE_SUBJECTS)){
     for(const [topicName, subtopics] of Object.entries(topics)){
-      // Add the topic itself at all 4 levels
-      for(const level of LEVELS){
-        queue.push({subject, topic:topicName, branch:null, level});
-      }
-      // Add each subtopic at all 4 levels
+      // Seed only grade5 — higher levels are fetched on-demand per section via /api/explore-section
+      queue.push({subject, topic:topicName, branch:null, level:"grade5"});
       for(const sub of subtopics){
-        for(const level of LEVELS){
-          queue.push({subject, topic:topicName, branch:sub, level});
-        }
+        queue.push({subject, topic:topicName, branch:sub, level:"grade5"});
       }
     }
   }
