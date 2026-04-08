@@ -216,7 +216,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 <div id="sidebar">
   <div id="sidebar-header">
     <h1>Curiosity Wikipedia</h1>
-    <p>Search any topic. Learn it from 5th Grade to PhD.</p>
+    <p>Search any topic. Start with an overview, dig deeper at each level.</p>
   </div>
   <div id="search-box-wrap">
     <input id="tree-search" placeholder="Search or explore a topic..." onkeydown="handleSearchKey(event)" oninput="handleSearchInput(this.value)">
@@ -236,7 +236,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     </div>
   </div>
   <div id="level-tabs">
-    <button class="level-tab active" id="tab-grade5" onclick="switchLevel('grade5')"><span class="lvl-dot"></span>5th Grade</button>
+    <button class="level-tab active" id="tab-grade5" onclick="switchLevel('grade5')"><span class="lvl-dot"></span>Overview</button>
     <button class="level-tab" id="tab-college" onclick="switchLevel('college')"><span class="lvl-dot"></span>College</button>
     <button class="level-tab" id="tab-masters" onclick="switchLevel('masters')"><span class="lvl-dot"></span>Master's</button>
     <button class="level-tab" id="tab-phd" onclick="switchLevel('phd')"><span class="lvl-dot"></span>PhD</button>
@@ -341,8 +341,8 @@ const KNOWLEDGE_TREE = {
 
 const ALL_SUBJECTS = Object.keys(KNOWLEDGE_TREE);
 const LEVELS = ["grade5","college","masters","phd"];
-const LEVEL_LABELS = {grade5:"5th Grade",college:"College",masters:"Master's",phd:"PhD"};
-const LEVEL_BUILD = {grade5:"Starting point",college:"Builds on 5th Grade",masters:"Builds on College",phd:"Builds on Master's"};
+const LEVEL_LABELS = {grade5:"Overview",college:"Undergraduate",masters:"Graduate",phd:"PhD"};
+const LEVEL_BUILD = {grade5:"Accessible introduction",college:"Builds on overview",masters:"Graduate depth",phd:"Research frontier"};
 const WIKI_API = "https://en.wikipedia.org/w/api.php";
 
 // ── State ─────────────────────────────────────────────
@@ -385,66 +385,156 @@ function syncLevelPills(lvl){
   LEVELS.forEach(l=>{const t=document.getElementById("tab-"+l);if(t)t.classList.toggle("active",l===lvl);});
 }
 
-// ── Search — maps to tree ─────────────────────────────
+// ── Search classification module ──────────────────────
+// Step 1: classify the domain of the query
+// Step 2: check if it matches a tree topic/subtopic exactly
+// Step 3: check for semantic proximity within the right subject
+// Step 4: generate as free topic under best-fit subject
+
+function classifyQuery(query){
+  const q = query.toLowerCase();
+
+  // Ordered by specificity — check word boundaries to avoid "element" matching "elements of a crime"
+  const domains = {
+    "Sciences & Engineering": {
+      weight: 0,
+      terms: ["nuclear","reactor","fission","fusion","neutron","proton","electron","quantum","atom","isotope",
+              "radioactive","radiation","plasma","particle","photon","relativity","gravity","thermodynamic",
+              "entropy","kinetic","potential energy","electromagnetic","magnetism","optics","laser","spectroscopy",
+              "semiconductor","transistor","circuit","resistor","capacitor","diode","voltage","current","ohm",
+              "chemical reaction","molecule","compound","polymer","crystal","alloy","catalyst","oxidation",
+              "acid","base","ph","titration","periodic table","valence","covalent","ionic","bond",
+              "cell biology","dna","rna","gene","chromosome","protein","enzyme","metabolism","photosynthesis",
+              "evolution","natural selection","ecology","ecosystem","species","taxonomy","anatomy","physiology",
+              "calculus","differential equation","integral","derivative","vector","matrix","eigenvalue",
+              "statistics","probability","distribution","regression","hypothesis test","correlation",
+              "civil engineering","structural","concrete","bridge","geotechnical","hydraulic","fluid mechanics",
+              "aerospace","thermodynamics","heat transfer","stress","strain","material science",
+              "climate","atmosphere","ocean","glacier","sea level","carbon cycle","greenhouse","fossil fuel",
+              "software","algorithm","data structure","computational","programming language","compiler",
+              "machine learning","neural network","deep learning","artificial intelligence","computer vision",
+              "fast breeder","heavy water","moderator","coolant","turbine","generator","power plant",
+              "telescope","satellite","orbit","galaxy","star","black hole","cosmology","universe","dark matter"]
+    },
+    "Maritime & Logistics": {
+      weight: 0,
+      terms: ["ship","vessel","port","maritime","sea","ocean","cargo","fleet","navigation","hull","stability",
+              "ballast","draught","tonnage","container","freight","logistics","harbour","dock","tide",
+              "anchor","rudder","propeller","berth","terminal","stevedore","charterer","bill of lading",
+              "marpol","solas","colreg","ism code","stcw","flag state","port state"]
+    },
+    "Health & Medicine": {
+      weight: 0,
+      terms: ["medical","health","disease","drug","anatomy","clinical","patient","hospital","therapy",
+              "diagnosis","surgery","pharmaceutical","epidemic","pandemic","symptom","treatment",
+              "cancer","diabetes","cardiovascular","neurology","psychiatry","immune","antibody",
+              "pathology","pharmacology","vaccine","antibiotic","organ","tissue","blood pressure"]
+    },
+    "Business & Economics": {
+      weight: 0,
+      terms: ["market","economy","economics","supply","demand","inflation","gdp","monetary policy","fiscal",
+              "trade","investment","finance","accounting","audit","tax","corporation","entrepreneurship",
+              "marketing","consumer","labour","wage","unemployment","microeconomics","macroeconomics",
+              "elasticity","utility","equilibrium","oligopoly","monopoly","game theory","portfolio",
+              "valuation","capital","dividend","merger","acquisition","corporate governance"]
+    },
+    "Arts, Law & Education": {
+      weight: 0,
+      terms: ["law","legal","legislation","constitution","criminal","civil law","tort","contract",
+              "philosophy","epistemology","ethics","metaphysics","logic","existentialism",
+              "history","archaeology","sociology","anthropology","culture","linguistics","literature",
+              "education","pedagogy","learning theory","curriculum","assessment",
+              "politics","democracy","governance","policy","international relations",
+              "art","music","film","theatre","architecture","design","aesthetics"]
+    },
+    "Research & Methods": {
+      weight: 0,
+      terms: ["research methodology","systematic review","meta-analysis","qualitative","quantitative",
+              "ethnography","grounded theory","survey design","experimental design","regression analysis",
+              "structural equation","factor analysis","bibliometrics","data envelopment","econometrics",
+              "instrumental variable","difference-in-differences","randomised controlled trial"]
+    },
+    "Marine & Antarctic Studies": {
+      weight: 0,
+      terms: ["oceanography","thermohaline","ocean circulation","marine biology","coral reef","plankton",
+              "benthic","deep sea","tidal","coastal","antarctic","arctic","ice sheet","ice shelf",
+              "southern ocean","katabatic","sea ice","subglacial","polar"]
+    },
+    "Information & Computing": {
+      weight: 0,
+      terms: ["cybersecurity","network security","encryption","firewall","malware","cryptography",
+              "database","sql","nosql","cloud computing","devops","agile","software engineering",
+              "operating system","computer network","internet protocol","web development","api design",
+              "data science","big data","information retrieval","natural language processing"]
+    }
+  };
+
+  // Score each domain using whole-word/phrase matching
+  for(const [domain, config] of Object.entries(domains)){
+    for(const term of config.terms){
+      // Use word boundary matching — term must appear as a word, not inside another word
+      const re = new RegExp(`(?:^|\\s|-)${term.replace(/[-\/]/g,'\\$&')}(?:$|\\s|,|\\.|-)`, 'i');
+      if(re.test(q)) config.weight += term.includes(" ") ? 3 : 1; // multi-word phrases score higher
+    }
+  }
+
+  // Find best scoring domain
+  let bestDomain = "Sciences & Engineering";
+  let bestScore = 0;
+  for(const [domain, config] of Object.entries(domains)){
+    if(config.weight > bestScore){ bestScore = config.weight; bestDomain = domain; }
+  }
+
+  return { domain: bestDomain, confidence: bestScore };
+}
+
 function findBestTreeMatch(query){
   const q = query.toLowerCase().trim();
-  // Exact topic match
+
+  // Step 1: Exact full match against topic names
   for(const subj of ALL_SUBJECTS){
     for(const tName of Object.keys(KNOWLEDGE_TREE[subj].topics)){
       if(tName.toLowerCase() === q) return {subj, topic:tName, branch:null, exact:true};
     }
   }
-  // Exact subtopic match
+  // Step 2: Exact full match against subtopic names
   for(const subj of ALL_SUBJECTS){
     for(const [tName, subs] of Object.entries(KNOWLEDGE_TREE[subj].topics)){
       const match = subs.find(s=>s.toLowerCase()===q);
       if(match) return {subj, topic:tName, branch:match, exact:true};
     }
   }
-  // Partial topic match (contains query)
-  for(const subj of ALL_SUBJECTS){
-    for(const tName of Object.keys(KNOWLEDGE_TREE[subj].topics)){
-      if(tName.toLowerCase().includes(q)||q.includes(tName.toLowerCase().split(" ")[0]))
-        return {subj, topic:tName, branch:null, exact:false};
-    }
-  }
-  // Partial subtopic match
-  for(const subj of ALL_SUBJECTS){
-    for(const [tName, subs] of Object.entries(KNOWLEDGE_TREE[subj].topics)){
-      const match = subs.find(s=>s.toLowerCase().includes(q)||q.includes(s.toLowerCase().split(" ")[0]));
-      if(match) return {subj, topic:tName, branch:match, exact:false};
-    }
-  }
-  // Subject keyword match
-  for(const subj of ALL_SUBJECTS){
-    const subjWords = subj.toLowerCase().split(/[\s&]+/);
-    if(subjWords.some(w=>w.length>3&&q.includes(w))||q.split(/\s+/).some(w=>w.length>3&&subj.toLowerCase().includes(w))){
-      const firstTopic = Object.keys(KNOWLEDGE_TREE[subj].topics)[0];
-      return {subj, topic:query, branch:null, exact:false, guessedSubj:subj};
-    }
-  }
-  // No match — best effort guess subject
-  const bestSubj = guessBestSubject(query);
-  return {subj:bestSubj, topic:query, branch:null, exact:false, guessedSubj:bestSubj};
-}
 
-function guessBestSubject(query){
-  const q = query.toLowerCase();
-  const keywords = {
-    "Sciences & Engineering":["physics","chemistry","biology","engineering","math","calculus","science","climate","energy","atom","nuclear","reactor","quantum","electron","proton","neutron","fusion","fission","force","thermodynamic","electric","magnetic","optical","laser","semiconductor","material","chemical","molecule","compound","reaction","element","periodic","wave","radiation","heat","pressure","fluid","mechanical","civil","structural","aerospace","geological","soil","concrete","bridge","circuit","signal","frequency","spectrum","telescope","satellite","rocket","propulsion","gravity","relativity","particle","plasma","superconductor","polymer","crystal","alloy","enzyme","protein","cell","gene","dna","rna","evolution","ecology","photosynthesis","bacteria","virus","vaccine","antibiotic"],
-    "Information & Computing":["internet","network","computer","software","data","algorithm","code","programming","web","digital","cyber","ai","machine","database","hardware","operating system","cloud","encryption","protocol","bandwidth","latency","compiler","syntax","runtime","memory","processor","gpu","api","framework","library","recursion","sorting","graph","tree","neural","deep learning","nlp","computer vision"],
-    "Maritime & Logistics":["ship","vessel","port","maritime","sea","ocean","cargo","fleet","navigation","hull","propulsion","stability","ballast","draught","tonnage","container","freight","logistics","harbour","dock","tide","wave","buoy","lighthouse","anchor","rudder"],
-    "Health & Medicine":["medical","health","disease","drug","anatomy","clinical","patient","hospital","therapy","diagnosis","surgery","pharmaceutical","epidemic","pandemic","symptom","treatment","vaccine","cancer","diabetes","heart","brain","lung","liver","kidney","blood","immune","neurological","psychiatric","mental health"],
-    "Business & Economics":["business","economy","market","finance","trade","investment","management","strategy","profit","revenue","supply","demand","inflation","gdp","monetary","fiscal","banking","accounting","audit","tax","corporation","startup","entrepreneurship","marketing","brand","consumer","labour","wage","unemployment"],
-    "Arts, Law & Education":["law","legal","education","philosophy","history","society","art","culture","literature","language","ethics","politics","democracy","constitution","crime","justice","rights","religion","anthropology","archaeology","linguistics","media","journalism","film","music","poetry","theatre"],
-    "Research & Methods":["research","method","analysis","study","statistics","methodology","hypothesis","experiment","survey","qualitative","quantitative","regression","model","inference","sampling","bias","validity","reliability","meta-analysis","systematic review"]
-  };
-  let best="Sciences & Engineering", bestScore=0;
-  for(const [subj, words] of Object.entries(keywords)){
-    const score = words.filter(w=>q.includes(w)).length;
-    if(score>bestScore){bestScore=score;best=subj;}
+  // Step 3: Classify query domain first, then look for matches within that domain only
+  const {domain, confidence} = classifyQuery(query);
+
+  // Step 4: Within the classified domain, look for partial topic match
+  if(KNOWLEDGE_TREE[domain]){
+    for(const tName of Object.keys(KNOWLEDGE_TREE[domain].topics)){
+      const tl = tName.toLowerCase();
+      // Require all query words (>3 chars) to appear in topic name, or vice versa
+      const qWords = q.split(/\s+/).filter(w=>w.length>3);
+      const tWords = tl.split(/\s+/).filter(w=>w.length>3);
+      const overlap = qWords.filter(w=>tl.includes(w)).length;
+      if(overlap >= Math.min(qWords.length, 2) && overlap > 0)
+        return {subj:domain, topic:tName, branch:null, exact:false};
+      // Or topic name appears entirely within query
+      if(q.includes(tl)) return {subj:domain, topic:tName, branch:null, exact:false};
+    }
+    // Step 5: Within classified domain, look for partial subtopic match
+    for(const [tName, subs] of Object.entries(KNOWLEDGE_TREE[domain].topics)){
+      const match = subs.find(s=>{
+        const sl = s.toLowerCase();
+        const qWords = q.split(/\s+/).filter(w=>w.length>3);
+        const overlap = qWords.filter(w=>sl.includes(w)).length;
+        return overlap >= Math.min(qWords.length,2) && overlap > 0;
+      });
+      if(match) return {subj:domain, topic:tName, branch:match, exact:false};
+    }
   }
-  return best;
+
+  // Step 6: No tree match — generate as free topic under classified domain
+  return {subj:domain, topic:query, branch:null, exact:false, guessedSubj:domain};
 }
 
 function handleSearchInput(val){
@@ -456,7 +546,8 @@ function handleSearchInput(val){
       ? `\u21B5 Go to: ${match.topic} \u203A ${match.branch}`
       : `\u21B5 Go to: ${match.topic}`;
   } else {
-    hint.textContent = `\u21B5 Explore: "${val}" \u2014 best match: ${match.subj}`;
+    const {domain} = classifyQuery(val);
+    hint.textContent = `\u21B5 Explore: "${val}" \u2014 filed under ${domain}`;
   }
   hint.classList.add("visible");
 }
@@ -920,7 +1011,9 @@ function parseSections(text){
 }
 
 // ── Visuals builders ──────────────────────────────────
-function buildImgStrip(imgs){return`<div class="image-strip">${imgs.map(img=>`<div class="img-card"><img src="${esc(img.src)}" alt="${esc(img.caption)}" loading="lazy" onerror="this.parentElement.style.display='none'"><div class="img-cap">${esc(img.caption)}</div></div>`).join("")}</div>`;}
+function buildImgStrip(imgs){
+  return`<div class="image-strip">${imgs.map(img=>`<div class="img-card"><img src="${esc(img.src)}" alt="${esc(img.caption)}" loading="lazy" onerror="this.parentElement.style.display='none'"><div class="img-cap">${esc(img.caption)}<span class="img-src"> · <a href="https://commons.wikimedia.org" target="_blank" rel="noopener" style="color:var(--text3);text-decoration:none;">Wikimedia Commons</a></span></div></div>`).join("")}</div>`;
+}
 function escSvg(s){
   // For SVG text content — only escape the characters SVG actually needs
   return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -959,11 +1052,33 @@ function buildConceptMap(nodes,title){
 function showSkeleton(v){
   let sk=document.getElementById("skeleton");
   if(v){
-    if(!sk){sk=document.createElement("div");sk.id="skeleton";sk.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px 30px;gap:22px;"><div style="position:relative;width:52px;height:52px;"><svg width="52" height="52" viewBox="0 0 52 52" style="animation:rotateRing 2s linear infinite;"><circle cx="26" cy="26" r="20" fill="none" stroke="var(--border2)" stroke-width="2.5"/><circle cx="26" cy="26" r="20" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="32 94" stroke-linecap="round"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;">&#x1F52D;</div></div><div style="text-align:center;"><div id="sk-topic" style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:5px;"></div><div id="sk-status" style="font-size:12px;color:var(--text3);">Generating explanation…</div></div><div style="display:flex;align-items:center;gap:4px;background:var(--bg2);border-radius:99px;padding:6px 14px;border:0.5px solid var(--border);">${LEVELS.map((l,i)=>`${i>0?'<span style="color:var(--text3);font-size:9px;">&#x2192;</span>':''}<span id="sk-lvl-${l}" style="font-size:11px;font-weight:500;padding:2px 8px;border-radius:99px;background:var(--bg3);color:var(--text3);transition:all 0.3s;">${LEVEL_LABELS[l]}</span>`).join("")}</div><div style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:7px;"><div class="skeleton" style="height:13px;width:58%;border-radius:5px;"></div><div class="skeleton" style="height:13px;width:84%;border-radius:5px;"></div><div class="skeleton" style="height:13px;width:70%;border-radius:5px;"></div><div class="skeleton" style="height:13px;width:88%;border-radius:5px;"></div></div></div>`;document.getElementById("content").prepend(sk);}
+    if(!sk){
+      sk=document.createElement("div");sk.id="skeleton";
+      sk.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px 30px;gap:22px;">
+        <div style="position:relative;width:52px;height:52px;">
+          <svg width="52" height="52" viewBox="0 0 52 52" style="animation:rotateRing 2s linear infinite;">
+            <circle cx="26" cy="26" r="20" fill="none" stroke="var(--border2)" stroke-width="2.5"/>
+            <circle cx="26" cy="26" r="20" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="32 94" stroke-linecap="round"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;">&#x1F52D;</div>
+        </div>
+        <div style="text-align:center;">
+          <div id="sk-topic" style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:5px;"></div>
+          <div id="sk-status" style="font-size:12px;color:var(--text3);">Generating overview…</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:6px;opacity:0.7;">Deeper levels load on demand as you explore</div>
+        </div>
+        <div style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:7px;">
+          <div class="skeleton" style="height:13px;width:58%;border-radius:5px;"></div>
+          <div class="skeleton" style="height:13px;width:84%;border-radius:5px;"></div>
+          <div class="skeleton" style="height:13px;width:70%;border-radius:5px;"></div>
+          <div class="skeleton" style="height:13px;width:88%;border-radius:5px;"></div>
+        </div>
+      </div>`;
+      document.getElementById("content").prepend(sk);
+    }
     sk.style.display="block";
     const topicEl=document.getElementById("sk-topic");if(topicEl)topicEl.textContent=currentBranch||currentTopic||"";
-    LEVELS.forEach(l=>{const el=document.getElementById("sk-lvl-"+l);if(el){el.style.background="var(--bg3)";el.style.color="var(--text3)";}});
-    const g5=document.getElementById("sk-lvl-grade5");if(g5){g5.style.background="var(--accent)";g5.style.color="#fff";}
+    const statusEl=document.getElementById("sk-status");if(statusEl)statusEl.textContent="Generating overview…";
   }else if(sk)sk.style.display="none";
 }
 function showArticle(v){document.getElementById("article").style.display=v?"block":"none";}
